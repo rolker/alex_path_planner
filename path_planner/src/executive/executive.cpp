@@ -81,12 +81,15 @@ void Executive::planLoop() {
 //            *m_PlannerConfig.output() << "Top of plan loop at time " << std::to_string(startTime) << std::endl;
 
             // planner is stateless so we can make a new instance each time
-            unique_ptr<Planner> planner;
-            if (m_UsePotentialFields) {
-                planner = std::unique_ptr<Planner>(new PotentialFieldsPlanner);
-            } else {
-                planner = std::unique_ptr<Planner>(new AStarPlanner);
-            }
+            // TODOSJW this is the part I need to change right here: add an if-else for my BIT* planner.
+            // TODOSJW will need to make a corresponding bool m_UseBitStar and set it somewhere/how (and probably look up the chain for that)
+            // TODOSJW will need to make a C++ binding for my Rust code, and import it, so that I can do "new BitStarPlanner," as below.
+            // unique_ptr<Planner> planner;
+            // if (m_UsePotentialFields) {
+            //     planner = std::unique_ptr<Planner>(new PotentialFieldsPlanner);
+            // } else {
+            //     planner = std::unique_ptr<Planner>(new AStarPlanner);
+            // }
 
             { // new scope for RAII again
                 unique_lock<mutex> lock(m_PlannerStateMutex);
@@ -183,10 +186,21 @@ void Executive::planLoop() {
                     std::lock_guard<std::mutex> lock(m_RibbonManagerMutex);
                     ribbonManagerCopy = m_RibbonManager;
                 }
+                // THOUGHTSJW: Since we are planning in the future, we're assuming the previous plan will have succeeded in covering the intended area.
                 // cover up to the state that we're planning from
                 ribbonManagerCopy.coverBetween(m_LastState.x(), m_LastState.y(), startState.x(), startState.y(), false);
-                stats = planner->plan(ribbonManagerCopy, startState, m_PlannerConfig, stats.Plan,
-                                     startTime + c_PlanningTimeSeconds - m_TrajectoryPublisher->getTime());
+                // TODOSJW this is where Executive passes information to planner
+                // stats = planner->plan(ribbonManagerCopy, startState, m_PlannerConfig, stats.Plan,
+                                    //  startTime + c_PlanningTimeSeconds - m_TrajectoryPublisher->getTime());
+                /*********************************************************************/
+                // ********************  BIT* Planner  ******************************
+                // TODO convert problem data into ASCII representation
+                // TODO set up pipes and fork subprocess with appropriate CLI args (just -v dubins, I guess)
+                // TODO pass problem data through first pipe to planner
+                // TODO capture planner output from second pipe
+                // TODO parse planner output into to format usable by executive/mpc/etc.
+                // TODO look at what kinds of logging/visualization calls Alex does, and see if I can do those too
+                /*********************************************************************/
             } catch (const std::exception& e) {
                 cerr << "Exception thrown while planning:" << endl;
                 cerr << e.what() << endl;
@@ -204,6 +218,7 @@ void Executive::planLoop() {
             // calculate remaining time (to sleep)
             double endTime = m_TrajectoryPublisher->getTime();
             int sleepTime = ((int) ((c_PlanningTimeSeconds - (endTime - startTime)) * 1000));
+            // TODOSJW don't sleep if using BIT*
             if (sleepTime >= 0) {
 //                *m_PlannerConfig.output() << "Finished with " << sleepTime << "ms extra time. Sleeping." << endl;
                 this_thread::sleep_for(chrono::milliseconds(sleepTime));
