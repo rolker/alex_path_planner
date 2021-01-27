@@ -9,6 +9,7 @@
 #include "../common/map/GeoTiffMap.h"
 #include "../common/map/GridWorldMap.h"
 #include "../planner/PotentialFieldPlanner.h"
+#include <string>
 
 using namespace std;
 
@@ -193,14 +194,82 @@ void Executive::planLoop() {
                 // TODOSJW this is where Executive passes information to planner
                 // stats = planner->plan(ribbonManagerCopy, startState, m_PlannerConfig, stats.Plan,
                                     //  startTime + c_PlanningTimeSeconds - m_TrajectoryPublisher->getTime());
+
                 /*********************************************************************/
                 // ********************  BIT* Planner  ******************************
+                // TODO get my BIT* executable in here
                 // TODO convert problem data into ASCII representation
                 // TODO set up pipes and fork subprocess with appropriate CLI args (just -v dubins, I guess)
                 // TODO pass problem data through first pipe to planner
                 // TODO capture planner output from second pipe
                 // TODO parse planner output into to format usable by executive/mpc/etc.
                 // TODO look at what kinds of logging/visualization calls Alex does, and see if I can do those too
+
+                char bit_star_planner_path[] = "../../../../bit_star_planner/target/release/planner";
+                
+                pid_t planner_pid;
+
+                // create pipes for communication to/from planner process
+                int downstream[2]; // for communication from executive to planner
+                int upstream[2]; // for communication from planner to executive
+                pipe(downstream);
+                pipe(upstream);
+
+                planner_pid = fork();
+
+                if (planner_pid == 0) {
+                    // planner/child process
+
+                    // child doesn't write to downstream
+                    close(downstream[1]);
+                    
+                    // child doesn't read from upstream 
+                    close(upstream[0]);
+
+                    // child's stdin is a copy of readable end of downstream pipe
+                    dup2(downstream[0], STDIN_FILENO);
+
+                    // child's stdout is a copy of writable end of upstream pipe
+                    dup2(upstream[1], STDOUT_FILENO);
+
+                    float time_limit = 2.0;
+
+                    // Plan with Dubins vehicle, and stop planning after first solution is found or time_limit reached, whichever comes first
+                    // TODO would be nice to use best (most recent) solution returned within time limit. (Will take fancier loop stuff in executive, below.)
+                    string argv = "-v dubins -u 1 -t " + to_string(time_limit);
+
+                    execl(bit_star_planner_path, "planner", argv);
+                } else {
+                    // parent
+                    // (`else` itself probably extraneous)
+
+                    // parent doesn't read from downstream pipe
+                    close(downstream[0]);
+                    // parent doesn't write to upstream pipe
+                    close(upstream[1]);
+
+                    // STUB
+                    char stub_problem[] = "4\n3\n____\n____\n____\n1.0\n1.0\n2.0\n1.0";
+
+                    // send problem to planner in child process via downstream pipe
+                    write(downstream[1], stub_problem, strlen(stub_problem));
+
+                    // flush the stream to make sure message gets to child *now*
+                    // (but to do so, we need a FILE pointer for fflush to work on)
+                    FILE * fp_downstream = fdopen(downstream[1], "w");
+                    fflush(fp_downstream);
+
+                    // read planner's response
+                    // TODO how big should the read-in buffer be?
+                    char buf[256];
+                    // TODO what happens if executive blocked on read and planner exits without sending anything to stdout? Will signal sent by child unblock parent's blocked `read`?
+                    read(upstream[0], buf, 256);
+                    printf("executive received from planner (%lu characters):\n%s", strlen(buf), buf);
+                    int status;
+                    pid_t wpid = waitpid(planner_pid, &status, 0); // wait for child before terminating
+                    printf("parent done waiting for child");
+                    // return wpid == pid && WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+                }
                 /*********************************************************************/
             } catch (const std::exception& e) {
                 cerr << "Exception thrown while planning:" << endl;
