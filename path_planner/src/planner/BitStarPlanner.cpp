@@ -83,7 +83,10 @@ Planner::Stats Planner::plan(const RibbonManager& ribbonManager, const State& st
             fflush(stdout);
         } else if (which == 1) {
             // https://stackoverflow.com/a/1519997
-            char arg0[] = "./target/release/planner";
+            char arg0[] = "./bit_star_planner/target/release/app";
+            if (!std::filesystem::exists(arg0)) {
+              throw std::runtime_error("cannot find built executable")
+            }
             char arg1[] = "-v";
             char arg2[] = "dubins";
             char arg3[] = "-u";
