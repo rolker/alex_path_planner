@@ -42,10 +42,25 @@ ostream * createOutStreamFromFD (int fd)
 }
 // ... end copied buffer stuff.
 
+// TODO
+Planner
+
 Planner::Stats Planner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
                          const DubinsPlan& previousPlan, double timeRemaining) {
+
+    // copied from Planner.cpp
+    m_Config = std::move(config);
+
     // STUB
     throw std::runtime_error("TO BE IMPLEMENTED");
+
+    // TODO pick go pose from ribbon manager
+    // per Roland: pick start point of first line in list
+
+    // TODO generate ASCII static obstacle map by
+    //  (1) get a Map from config.map() (but not actually Map...because that is stub?)
+    //  (2) query map.extremes() to get bounds of world
+    //  (3) exhaustively query map.isBlocked within extremes to set each cell to clear or blocked
 
     pid_t pid;
 
@@ -123,7 +138,10 @@ Planner::Stats Planner::plan(const RibbonManager& ribbonManager, const State& st
         string received;
         // WORKS: exits loop after message received
         while (std::getline(*reader, received)) {
+            // STUB
             cout << "p" << received << endl;
+            // TODO parse planner output
+            // TODO initialize stats object with results from planner
         }
 
         int status;
