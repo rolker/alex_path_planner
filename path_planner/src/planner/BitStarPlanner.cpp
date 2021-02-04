@@ -1,8 +1,5 @@
 // Wrapper for BIT* planner
 
-#ifndef SRC_BITSTARPLANNER_H
-#define SRC_BITSTARPLANNER_H
-
 #include "Planner.h"
 
 #include <unistd.h>
@@ -153,4 +150,3 @@ Planner::Stats Planner::plan(const RibbonManager& ribbonManager, const State& st
     return 0;
 }
 
-#endif // SRC_BITSTARPLANNER_H

@@ -9,6 +9,7 @@
 #include "../common/map/GeoTiffMap.h"
 #include "../common/map/GridWorldMap.h"
 #include "../planner/PotentialFieldPlanner.h"
+#include "../planner/BitStarPlanner.h"
 
 using namespace std;
 
