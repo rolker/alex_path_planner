@@ -84,10 +84,18 @@ void Executive::planLoop() {
 
             // planner is stateless so we can make a new instance each time
             unique_ptr<Planner> planner;
-            if (m_UsePotentialField) {
-                planner = std::unique_ptr<Planner>(new PotentialFieldPlanner);
-            } else {
-                planner = std::unique_ptr<Planner>(new AStarPlanner);
+            switch (m_WhichPlanner) {
+                case WhichPlanner::PotentialField:
+                    planner = std::unique_ptr<Planner>(new PotentialFieldPlanner);
+                    break;
+                case WhichPlanner::AStar:
+                    planner = std::unique_ptr<Planner>(new AStarPlanner);
+                    break;
+                case WhichPlanner::BitStar:
+                    planner = std::unique_ptr<Planner>(new BitStarPlanner);
+                    break;
+                default:
+                    throw invalid_argument("Unrecognized case for m_WhichPlanner.");
             }
 
             { // new scope for RAII again
@@ -396,7 +404,7 @@ void Executive::setConfiguration(double turningRadius, double coverageTurningRad
                                  double lineWidth, int k, int heuristic, double timeHorizon, double timeMinimum,
                                  double collisionCheckingIncrement, int initialSamples, bool useBrownPaths,
                                  bool useGaussianDynamicObstacles, bool ignoreDynamicObstacles,
-                                 bool usePotentialField) {
+                                 WhichPlanner whichPlanner) {
     m_PlannerConfig.setTurningRadius(turningRadius);
     m_PlannerConfig.setCoverageTurningRadius(coverageTurningRadius);
     m_PlannerConfig.setMaxSpeed(maxSpeed);
@@ -419,7 +427,7 @@ void Executive::setConfiguration(double turningRadius, double coverageTurningRad
     m_PlannerConfig.setUseBrownPaths(useBrownPaths);
     m_UseGaussianDynamicObstacles = useGaussianDynamicObstacles;
     m_IgnoreDynamicObstacles = ignoreDynamicObstacles;
-    m_UsePotentialField = usePotentialField;
+    m_WhichPlanner = whichPlanner;
 }
 
 void Executive::startPlanner() {

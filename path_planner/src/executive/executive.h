@@ -89,6 +89,15 @@ public:
     static double getCurrentTime();
 
     /**
+     * Enum to represent which planner to use. Passed to setConfiguration.
+     */
+    enum WhichPlanner {
+        PotentialField, // Alex Brown
+        AStar, // Real-Time BIT* (RBPC) by Alex Brown
+        BitStar, // BIT* implementation by Stephen Wissow
+    };
+
+    /**
      * Update the configuration of the planner.
      * @param turningRadius
      * @param coverageTurningRadius
@@ -100,7 +109,7 @@ public:
     void setConfiguration(double turningRadius, double coverageTurningRadius, double maxSpeed, double slowSpeed,
                           double lineWidth, int k, int heuristic, double timeHorizon, double timeMinimum,
                           double collisionCheckingIncrement, int initialSamples, bool useBrownPaths,
-                          bool useGaussianDynamicObstacles, bool ignoreDynamicObstacles, bool usePotentialField);
+                          bool useGaussianDynamicObstacles, bool ignoreDynamicObstacles, WhichPlanner whichPlanner);
 
     /**
      * Update the planner visualization status with a new visualization file. If visualize is false the path is ignored.
@@ -142,8 +151,8 @@ private:
     // whether or not to ignore dynamic obstacles
     bool m_IgnoreDynamicObstacles = false;
 
-    // flag for the potential field planner (ignores most other planner config options)
-    bool m_UsePotentialField = false;
+    // which planner to use (potential field planner ignores most other planner config options)
+    WhichPlanner m_WhichPlanner = WhichPlanner::AStar;
 
     // handle on a visualizer. This could probably be handled in a cleaner way
     Visualizer::UniquePtr m_Visualizer;
