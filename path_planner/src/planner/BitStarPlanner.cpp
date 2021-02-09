@@ -149,6 +149,20 @@ Planner::Stats Planner::plan(const RibbonManager& ribbonManager, const State& st
         return wpid == pid && WIFEXITED(status) ? WEXITSTATUS(status) : -1;
 
     }
-    return 0;
+
+    // STUB
+    Planner::Stats results;
+    results.Samples = 0;
+    results.Generated = 0;
+    results.Expanded = 0;
+    results.Iterations = 0;
+    results.PlanFValue = 0.0;
+    results.PlanCollisionPenalty = 0.0;
+    results.PlanTimePenalty = 0.0;
+    results.PlanHValue = 0;
+    results.PlanDepth = 0;
+    results.Plan = DubinsPlan();
+
+    return results;
 }
 
