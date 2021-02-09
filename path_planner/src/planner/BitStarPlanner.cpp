@@ -1,5 +1,6 @@
 // Wrapper for BIT* planner
 
+#include "BitStarPlanner.h"
 #include "Planner.h"
 
 #include <unistd.h>
@@ -10,6 +11,8 @@
 #include <iostream>
 
 using namespace std;
+
+BitStarPlanner::BitStarPlanner() {};
 
 // buffer stuff
 // copied from https://gist.github.com/rajatkhanduja/2012695 :
