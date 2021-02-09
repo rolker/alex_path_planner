@@ -42,7 +42,7 @@ ostream * createOutStreamFromFD (int fd)
 // TODO
 // Planner
 
-Planner::Stats Planner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
+Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
                          const DubinsPlan& previousPlan, double timeRemaining) {
 
     // copied from Planner.cpp
@@ -146,7 +146,8 @@ Planner::Stats Planner::plan(const RibbonManager& ribbonManager, const State& st
         int status;
         pid_t wpid = waitpid(pid, &status, 0); // wait for child before terminating
         printf("parent exits\n");
-        return wpid == pid && WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+        // deprecated (from development prior to incorporating into Project 11):
+        // return wpid == pid && WIFEXITED(status) ? WEXITSTATUS(status) : -1;
 
     }
 
