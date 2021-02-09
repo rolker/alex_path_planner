@@ -40,7 +40,7 @@ ostream * createOutStreamFromFD (int fd)
 // ... end copied buffer stuff.
 
 // TODO
-Planner
+// Planner
 
 Planner::Stats Planner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
                          const DubinsPlan& previousPlan, double timeRemaining) {
