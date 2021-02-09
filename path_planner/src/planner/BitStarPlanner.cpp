@@ -99,7 +99,9 @@ Planner::Stats Planner::plan(const RibbonManager& ribbonManager, const State& st
         } else if (which == 1) {
             // https://stackoverflow.com/a/1519997
             char arg0[] = "./bit_star_planner/target/release/app";
-            if (!std::filesystem::exists(arg0)) {
+            // confirm file is present (coarse check)
+            ifstream planner_executable_file(arg0);
+            if (!planner_executable_file.good()) {
               throw std::runtime_error("cannot find built executable");
             }
             char arg1[] = "-v";
