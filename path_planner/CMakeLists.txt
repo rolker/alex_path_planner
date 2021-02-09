@@ -78,7 +78,8 @@ add_library(planner
         src/planner/AStarPlanner.cpp
         src/planner/utilities/Ribbon.cpp
         src/planner/utilities/RibbonManager.cpp
-        src/planner/PotentialFieldPlanner.cpp src/planner/PotentialFieldPlanner.h)
+        src/planner/PotentialFieldPlanner.cpp src/planner/PotentialFieldPlanner.h
+        src/planner/BitStarPlanner.cpp)
 
 add_dependencies(planner path_planner_common)
 
