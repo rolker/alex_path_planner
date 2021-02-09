@@ -90,10 +90,12 @@ public:
 
     /**
      * Enum to represent which planner to use. Passed to setConfiguration.
+     * 
+     * Note: the number and order of variants in this enum must exactly match `planner_enum` in path_planner.cfg ROS dynamic reconfiguration file, and the range of the `planner` parameter in that file must also be set appropriately.
      */
     enum WhichPlanner {
-        PotentialField, // Alex Brown
         AStar, // Real-Time BIT* (RBPC) by Alex Brown
+        PotentialField, // Alex Brown
         BitStar, // BIT* implementation by Stephen Wissow
     };
 
