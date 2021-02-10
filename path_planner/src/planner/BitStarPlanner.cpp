@@ -57,7 +57,12 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     // per Roland: pick start point of first line in list
 
     // generate ASCII static obstacle map by
-    // get bounds of world
+    
+    // get bounds of world:
+    // per Map.h:
+    //  an array of four doubles, "(minX, maxX, minY, maxY)"
+    //  default value: {-DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX}
+    // GridWorldMap overwrites these values based on map file dimensions and resolution.
     auto mapExtremes = config.map()->extremes();
     // TODO this is where we need to know how many cells we want on a side.
     // QUESTION what units are the map in?
