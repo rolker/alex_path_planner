@@ -10,6 +10,8 @@
 #include <sys/wait.h>
 #include <iostream>
 
+#include "../common/map/Map.h"
+
 using namespace std;
 
 BitStarPlanner::BitStarPlanner() {};
@@ -42,9 +44,6 @@ ostream * createOutStreamFromFD (int fd)
 }
 // ... end copied buffer stuff.
 
-// TODO
-// Planner
-
 Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
                          const DubinsPlan& previousPlan, double timeRemaining) {
 
@@ -57,9 +56,11 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     // TODO pick go pose from ribbon manager
     // per Roland: pick start point of first line in list
 
-    // TODO generate ASCII static obstacle map by
-    //  (1) get a Map from config.map() (but not actually Map...because that is stub?)
-    //  (2) query map.extremes() to get bounds of world
+    // generate ASCII static obstacle map by
+    // get bounds of world
+    auto mapExtremes = config.map()->extremes();
+    // TODO this is where we need to know how many cells we want on a side.
+    // QUESTION what units are the map in?
     //  (3) exhaustively query map.isBlocked within extremes to set each cell to clear or blocked
 
     pid_t pid;
