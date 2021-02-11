@@ -65,10 +65,10 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     *m_Config.output() << "DEBUG: BitStarPlanner::plan() about to get extremes" << endl;
     m_Config.output()->flush();
     auto mapExtremes = m_Config.map()->extremes();
-    *m_Config.output() << "DEBUG: BitStarPlanner::plan() just got extremes" << endl;
+    *m_Config.output() << "DEBUG: BitStarPlanner::plan() just got extremes: " << mapExtremes[0] << "," << mapExtremes[1] << "," << mapExtremes[2] << "," << mapExtremes[3] << "," << endl;
     config.output()->flush();
     auto mapResolution = m_Config.map()->resolution();
-    *m_Config.output() << "DEBUG: BitStarPlanner::plan() just got resolution" << endl;
+    *m_Config.output() << "DEBUG: BitStarPlanner::plan() just got resolution: " << mapResolution << endl;
     m_Config.output()->flush();
     // convert to number of rows and number of columns, so we'll know what ranges to index into config.map()->isBlocked()
     int num_cols = (mapExtremes[1] - mapExtremes[0]) / mapResolution;
@@ -76,9 +76,10 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     *m_Config.output() << "DEBUG: BitStarPlanner::plan() thinks the static obstacle map has " << num_cols << " columns and " << num_rows << " rows" << endl;
 
     // start build ascii world string for BIT* planner app to consume via stdin
-    std::string world = "";
-    world.append("%d\n", num_cols);
-    world.append("%d\n", num_rows);
+    std::string world = std::to_string(num_cols);
+    *m_Config.output() << "DEBUG: BitStarPlanner::plan() building world:" << endl << world << endl;
+    world.append("\n%d\n", num_rows);
+    *m_Config.output() << "DEBUG: BitStarPlanner::plan() building world:" << endl << world << endl;
     for (int row = 0; row < num_rows; row++) {
       for (int col = 0; col < num_cols; col++) {
         // QUESTION should I actually check (double row.1, doubl col.1), to make sure I'm on the intended side of each cell boundary?
@@ -87,11 +88,12 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         } else {
           world.append("_");
         }
+        *m_Config.output() << "DEBUG: BitStarPlanner::plan() building world:" << endl << world << endl;
       }
       world.append("\n");
     }
 
-    *m_Config.output() << "BitStarPlanner constructed world:\n" << world << endl;
+    *m_Config.output() << "DEBUG: BitStarPlanner constructed world:\n" << world << endl;
     // STUB
     throw std::runtime_error("TO BE IMPLEMENTED");
 
