@@ -47,11 +47,10 @@ ostream * createOutStreamFromFD (int fd)
 Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
                          const DubinsPlan& previousPlan, double timeRemaining) {
 
+    *config.output() << "DEBUG: BitStarPlanner::plan() starting" << endl;
+    config.output()->flush();
     // copied from Planner.cpp
     m_Config = std::move(config);
-
-    // STUB
-    throw std::runtime_error("TO BE IMPLEMENTED");
 
     // TODO pick go pose from ribbon manager
     // per Roland: pick start point of first line in list
@@ -63,11 +62,19 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     //  an array of four doubles, "(minX, maxX, minY, maxY)"
     //  default value: {-DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX}
     // GridWorldMap overwrites these values based on map file dimensions and resolution.
-    auto mapExtremes = config.map()->extremes();
-    auto mapResolution = config.map()->resolution();
+    *m_Config.output() << "DEBUG: BitStarPlanner::plan() about to get extremes" << endl;
+    m_Config.output()->flush();
+    auto mapExtremes = m_Config.map()->extremes();
+    *m_Config.output() << "DEBUG: BitStarPlanner::plan() just got extremes" << endl;
+    config.output()->flush();
+    auto mapResolution = m_Config.map()->resolution();
+    *m_Config.output() << "DEBUG: BitStarPlanner::plan() just got resolution" << endl;
+    m_Config.output()->flush();
     // convert to number of rows and number of columns, so we'll know what ranges to index into config.map()->isBlocked()
     int num_cols = (mapExtremes[1] - mapExtremes[0]) / mapResolution;
     int num_rows = (mapExtremes[3] - mapExtremes[2]) / mapResolution;
+    *m_Config.output() << "DEBUG: BitStarPlanner::plan() thinks the static obstacle map has " << num_cols << " columns and " << num_rows << " rows" << endl;
+
     // start build ascii world string for BIT* planner app to consume via stdin
     std::string world = "";
     world.append("%d\n", num_cols);
@@ -75,7 +82,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     for (int row = 0; row < num_rows; row++) {
       for (int col = 0; col < num_cols; col++) {
         // QUESTION should I actually check (double row.1, doubl col.1), to make sure I'm on the intended side of each cell boundary?
-        if (config.map()->isBlocked(col, row)) {
+        if (m_Config.map()->isBlocked(col, row)) {
           world.append("#");
         } else {
           world.append("_");
@@ -84,7 +91,9 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
       world.append("\n");
     }
 
-    *config.output() << "BitStarPlanner constructed world:\n" << world << endl;
+    *m_Config.output() << "BitStarPlanner constructed world:\n" << world << endl;
+    // STUB
+    throw std::runtime_error("TO BE IMPLEMENTED");
 
     //  (3) exhaustively query map.isBlocked within extremes to set each cell to clear or blocked
 
