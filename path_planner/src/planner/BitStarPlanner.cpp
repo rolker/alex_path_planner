@@ -64,8 +64,28 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     //  default value: {-DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX}
     // GridWorldMap overwrites these values based on map file dimensions and resolution.
     auto mapExtremes = config.map()->extremes();
-    // TODO this is where we need to know how many cells we want on a side.
-    // QUESTION what units are the map in?
+    auto mapResolution = config.map()->resolution();
+    // convert to number of rows and number of columns, so we'll know what ranges to index into config.map()->isBlocked()
+    int num_cols = (mapExtremes[1] - mapExtremes[0]) / mapResolution;
+    int num_rows = (mapExtremes[3] - mapExtremes[2]) / mapResolution;
+    // start build ascii world string for BIT* planner app to consume via stdin
+    std::string world = "";
+    world.append("%d\n", num_cols);
+    world.append("%d\n", num_rows);
+    for (int row = 0; row < num_rows; row++) {
+      for (int col = 0; col < num_cols; col++) {
+        // QUESTION should I actually check (double row.1, doubl col.1), to make sure I'm on the intended side of each cell boundary?
+        if (config.map()->isBlocked(col, row)) {
+          world.append("#");
+        } else {
+          world.append("_");
+        }
+      }
+      world.append("\n");
+    }
+
+    *config.output() << "BitStarPlanner constructed world:\n" << world << endl;
+
     //  (3) exhaustively query map.isBlocked within extremes to set each cell to clear or blocked
 
     pid_t pid;
