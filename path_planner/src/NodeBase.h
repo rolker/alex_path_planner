@@ -28,17 +28,17 @@ public:
         m_current_speed = 0.01;
         m_current_heading = 0;
 
-        m_node_handle.advertise<geographic_visualization_msgs::GeoVizItem>("/project11/display",1);
+        m_node_handle.advertise<geographic_visualization_msgs::GeoVizItem>("project11/display",1);
 
-        m_controller_msgs_pub = m_node_handle.advertise<std_msgs::String>("/controller_msgs",1);
-        m_display_pub = m_node_handle.advertise<geographic_visualization_msgs::GeoVizItem>("/project11/display",1);
+        m_controller_msgs_pub = m_node_handle.advertise<std_msgs::String>("controller_msgs",1);
+        m_display_pub = m_node_handle.advertise<geographic_visualization_msgs::GeoVizItem>("project11/display",1);
 
-        m_update_reference_trajectory_client = m_node_handle.serviceClient<path_planner_common::UpdateReferenceTrajectory>("/mpc/update_reference_trajectory");
+        m_update_reference_trajectory_client = m_node_handle.serviceClient<path_planner_common::UpdateReferenceTrajectory>("mpc/update_reference_trajectory");
 
-        m_position_sub = m_node_handle.subscribe("/position_map", 10, &NodeBase::positionCallback, this);
-        m_heading_sub = m_node_handle.subscribe("/heading", 10, &NodeBase::headingCallback, this);
-        m_speed_sub = m_node_handle.subscribe("/sog", 10, &NodeBase::speedCallback, this);
-        m_piloting_mode_sub = m_node_handle.subscribe("/project11/piloting_mode", 10, &NodeBase::pilotingModeCallback, this);
+        m_position_sub = m_node_handle.subscribe("position_map", 10, &NodeBase::positionCallback, this);
+        m_heading_sub = m_node_handle.subscribe("heading", 10, &NodeBase::headingCallback, this);
+        m_speed_sub = m_node_handle.subscribe("sog", 10, &NodeBase::speedCallback, this);
+        m_piloting_mode_sub = m_node_handle.subscribe("project11/piloting_mode", 10, &NodeBase::pilotingModeCallback, this);
 
         m_action_server.registerGoalCallback(boost::bind(&NodeBase::goalCallback, this));
         m_action_server.registerPreemptCallback(boost::bind(&NodeBase::preemptCallback, this));
