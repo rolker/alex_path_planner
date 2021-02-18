@@ -112,9 +112,12 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     world << goal.y() / mapResolution << endl;
     double goal_heading = fmod((M_PI / 2) - goal.heading(), 2 * M_PI);
 
-    *m_Config.output() << "DEBUG: BitStarPlanner constructed world:\n" << world.str() << endl;
+    std::string world_str = world.str();
+
+    *m_Config.output() << "DEBUG: BitStarPlanner constructed world:\n" << world_str << endl;
+
     // STUB
-    throw std::runtime_error("TO BE IMPLEMENTED");
+    // throw std::runtime_error("TO BE IMPLEMENTED");
 
     //  (3) exhaustively query map.isBlocked within extremes to set each cell to clear or blocked
 
@@ -145,6 +148,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         // child's stdout is copied (written) into the upstream-directed pipe
         dup2(upstream[1], STDOUT_FILENO);
         
+        // DEBUG switch
         int which = 1;
         if (which == 0) {
             // receive message from parent
@@ -156,7 +160,6 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             // flush to make sure it gets there
             fflush(stdout);
         } else if (which == 1) {
-            // https://stackoverflow.com/a/1519997
             char arg0[] = "./bit_star_planner/target/release/app";
             // confirm file is present (coarse check)
             ifstream planner_executable_file(arg0);
@@ -169,7 +172,11 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             char arg4[] = "1";
             char arg5[] = "-t";
             char arg6[] = "1.9";
-            execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, NULL);
+            char arg7[] = "-s";
+            char arg8[] = "%d", start_heading;
+            char arg9[] = "-g";
+            char arg10[] = "%d", goal_heading;
+            execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, NULL);
         }
 
     } else {
@@ -185,9 +192,12 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         ostream * writer = createOutStreamFromFD(downstream[1]);
         istream * reader = createInStreamFromFD(upstream[0]);
 
+        // DEBUG
         string simple = "4\n3\n____\n____\n____\n1.0\n1.0\n2.0\n1.0";
         string space0 = "4\n3\n____\n__#_\n___#\n0.1\n1.54\n3.8\n1.1";
-        string msg = simple;
+
+        // Set ASCII world to be sent to BIT* planner app
+        string msg = world_str;
         *writer << msg;
         writer->flush(); // ESSENTIAL
 
