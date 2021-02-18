@@ -10,6 +10,8 @@
 #include <sys/wait.h>
 #include <iostream>
 
+#include <sstream>
+
 #include "../common/map/Map.h"
 
 using namespace std;
@@ -76,24 +78,23 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     *m_Config.output() << "DEBUG: BitStarPlanner::plan() thinks the static obstacle map has " << num_cols << " columns and " << num_rows << " rows" << endl;
 
     // start build ascii world string for BIT* planner app to consume via stdin
-    std::string world = std::to_string(num_cols);
-    *m_Config.output() << "DEBUG: BitStarPlanner::plan() building world:" << endl << world << endl;
-    world.append("\n%d\n", num_rows);
-    *m_Config.output() << "DEBUG: BitStarPlanner::plan() building world:" << endl << world << endl;
+    std::ostringstream world;
+    world << num_cols << endl;
+    world << num_rows << endl;
     for (int row = 0; row < num_rows; row++) {
       for (int col = 0; col < num_cols; col++) {
-        // QUESTION should I actually check (double row.1, doubl col.1), to make sure I'm on the intended side of each cell boundary?
+        // QUESTION should I actually pass (double row.1, doubl col.1) to isBlocked to make sure I'm on the intended side of each cell boundary?
         if (m_Config.map()->isBlocked(col, row)) {
-          world.append("#");
+          world << "#";
         } else {
-          world.append("_");
+          world << "_";
         }
-        *m_Config.output() << "DEBUG: BitStarPlanner::plan() building world:" << endl << world << endl;
+        // *m_Config.output() << "DEBUG: BitStarPlanner::plan() building world:" << endl << world << endl;
       }
-      world.append("\n");
+      world << endl;
     }
 
-    *m_Config.output() << "DEBUG: BitStarPlanner constructed world:\n" << world << endl;
+    *m_Config.output() << "DEBUG: BitStarPlanner constructed world:\n" << world.str() << endl;
     // STUB
     throw std::runtime_error("TO BE IMPLEMENTED");
 
