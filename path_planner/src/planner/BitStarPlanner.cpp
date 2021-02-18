@@ -46,6 +46,10 @@ ostream * createOutStreamFromFD (int fd)
 }
 // ... end copied buffer stuff.
 
+State selectGoal(const State& reference, const RibbonManager& ribbonManager) {
+  return ribbonManager.getNearestEndpointAsState(reference);
+}
+
 Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
                          const DubinsPlan& previousPlan, double timeRemaining) {
 
@@ -83,7 +87,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     world << num_rows << endl;
     for (int row = 0; row < num_rows; row++) {
       for (int col = 0; col < num_cols; col++) {
-        // QUESTION should I actually pass (double row.1, doubl col.1) to isBlocked to make sure I'm on the intended side of each cell boundary?
+        // QUESTION should I actually pass (double row.1, double col.1) to isBlocked to make sure I'm on the intended side of each cell boundary?
         if (m_Config.map()->isBlocked(col, row)) {
           world << "#";
         } else {
@@ -93,6 +97,20 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
       }
       world << endl;
     }
+
+    // start coordinates
+    // TODO remove division by resolution once BIT* code is updated to handle resolution
+    world << start.x() / mapResolution << endl;
+    world << start.y() / mapResolution << endl;
+    // convert from (State) radians east of north to radians north of east
+    double start_heading = fmod((M_PI / 2) - start.heading(), 2 * M_PI);
+
+    // goal coordinates
+    State goal = selectGoal(start, ribbonManager);
+    // TODO remove division by resolution once BIT* code is updated to handle resolution
+    world << goal.x() / mapResolution << endl;
+    world << goal.y() / mapResolution << endl;
+    double goal_heading = fmod((M_PI / 2) - goal.heading(), 2 * M_PI);
 
     *m_Config.output() << "DEBUG: BitStarPlanner constructed world:\n" << world.str() << endl;
     // STUB
