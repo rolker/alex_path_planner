@@ -50,6 +50,11 @@ State selectGoal(const State& reference, const RibbonManager& ribbonManager) {
   return ribbonManager.getNearestEndpointAsState(reference);
 }
 
+// Convert radians east of north (path_planner_common State) to radians north of east (bit_star_planner State)
+double convert_eon_to_noe(double eon) {
+  return fmod((M_PI / 2) - eon + 2 * M_PI, 2 * M_PI);
+}
+
 Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
                          const DubinsPlan& previousPlan, double timeRemaining) {
 
@@ -102,15 +107,14 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     // TODO remove division by resolution once BIT* code is updated to handle resolution
     world << start.x() / mapResolution << endl;
     world << start.y() / mapResolution << endl;
-    // convert from (State) radians east of north to radians north of east
-    double start_heading = fmod((M_PI / 2) - start.heading(), 2 * M_PI);
+    double start_heading = convert_eon_to_noe(start.heading());
 
     // goal coordinates
     State goal = selectGoal(start, ribbonManager);
     // TODO remove division by resolution once BIT* code is updated to handle resolution
     world << goal.x() / mapResolution << endl;
     world << goal.y() / mapResolution << endl;
-    double goal_heading = fmod((M_PI / 2) - goal.heading(), 2 * M_PI);
+    double goal_heading = convert_eon_to_noe(goal.heading());
 
     std::string world_str = world.str();
 
