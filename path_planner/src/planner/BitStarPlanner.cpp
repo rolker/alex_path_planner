@@ -160,7 +160,10 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             // flush to make sure it gets there
             fflush(stdout);
         } else if (which == 1) {
-            char arg0[] = "./bit_star_planner/target/release/app";
+            // absolute path to BIT* app executable on Steve's machine
+            // (Since ROS nodes run in unique temporary directories, e.g. /tmp/rosmon-node-UDIhm6, there is no stable relative path
+            // with current way that BIT* app executable is in bit_star_planner submodule of path_planner submodule of Project 11 repo.)
+            char arg0[] = "/home/sjw/scm/project11/catkin_ws/src/path_planner/path_planner/src/planner/bit_star_planner/target/release/app";
             // confirm file is present (coarse check)
             ifstream planner_executable_file(arg0);
             if (!planner_executable_file.good()) {
@@ -173,9 +176,14 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             char arg5[] = "-t";
             char arg6[] = "1.9";
             char arg7[] = "-s";
-            char arg8[] = "%d", start_heading;
+            std::string start_heading_str = std::to_string(start_heading);
+            const char* arg8 = start_heading_str.c_str();
             char arg9[] = "-g";
-            char arg10[] = "%d", goal_heading;
+            std::string goal_heading_str = std::to_string(goal_heading);
+            const char* arg10 = goal_heading_str.c_str();
+
+            *m_Config.output() << "DEBUG: BitStarPlanner will make this system call: " << arg0 << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << " " << arg5 << " " << arg6 << " " << arg7 << " " << arg8 << " " << arg9 << " " << arg10 << endl;
+
             execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, NULL);
         }
 
