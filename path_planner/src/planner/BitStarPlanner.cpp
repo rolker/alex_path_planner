@@ -186,6 +186,8 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             std::string goal_heading_str = std::to_string(goal_heading);
             const char* arg10 = goal_heading_str.c_str();
 
+            // TODO add seed for RNG for reproducibility during development: -e 0
+
             *m_Config.output() << "DEBUG: BitStarPlanner will make this system call: " << arg0 << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << " " << arg5 << " " << arg6 << " " << arg7 << " " << arg8 << " " << arg9 << " " << arg10 << endl;
 
             execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, NULL);
@@ -215,14 +217,29 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
 
         close(downstream[1]); // ESSENTIAL
 
-        string received;
+        string chunk;
+        stringstream raw_plan;
         // WORKS: exits loop after message received
-        while (std::getline(*reader, received)) {
-            // STUB
-            cout << "p" << received << endl;
-            // TODO parse planner output
-            // TODO initialize stats object with results from planner
+        while (std::getline(*reader, chunk)) {
+          // STUB
+          raw_plan << chunk << endl;
         }
+
+        // TODO parse planner output
+        // *m_Config.output() << "DEBUG: BitStarPlanner received following raw plan:\n" << endl;
+        // *m_Config.output() << raw_plan.str() << endl;
+        int batch_number;
+        raw_plan >> batch_number;
+        float plan_cost;
+        raw_plan >> plan_cost;
+        int solution_steps_count;
+        raw_plan >> solution_steps_count;
+        DubinsPlan dubins_plan = DubinsPlan();
+        for (int i = 0; i < solution_steps_count; i++) {
+          // TODO
+        }
+
+        // TODO initialize stats object with results from planner
 
         int status;
         pid_t wpid = waitpid(pid, &status, 0); // wait for child before terminating
