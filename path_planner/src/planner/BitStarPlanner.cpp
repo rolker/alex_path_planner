@@ -55,6 +55,10 @@ double convert_eon_to_noe(double eon) {
   return fmod((M_PI / 2) - eon + 2 * M_PI, 2 * M_PI);
 }
 
+DubinsPathType dubins_path_type(string path_type_str) {
+
+}
+
 Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
                          const DubinsPlan& previousPlan, double timeRemaining) {
 
@@ -236,7 +240,35 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         raw_plan >> solution_steps_count;
         DubinsPlan dubins_plan = DubinsPlan();
         for (int i = 0; i < solution_steps_count; i++) {
-          // TODO
+          double qi[3] = {0,0,0};
+          double param[3] = {0,0,0};
+          double rho = 0;
+          char * dubins_word;
+          // ignore standalone first print out of initial configuration (x, y, theta)
+          char * SKIP = "";
+          raw_plan >> SKIP;
+          raw_plan >> SKIP;
+          raw_plan >> SKIP;
+          SKIP = "";
+          // get initial configuration from 
+          raw_plan >> qi[0];
+          raw_plan >> qi[1];
+          raw_plan >> qi[2];
+          // get normalized segment lengths
+          raw_plan >> param[0];
+          raw_plan >> param[1];
+          raw_plan >> param[2];
+          // get radius/scaling factor
+          raw_plan >> rho;
+          // get Dubins word (path type, e.g., "LSL," etc.)
+          raw_plan >> dubins_word;
+          // convert to proper DubinsPath struct type
+          DubinsPath dubins_path = {
+
+          }
+          const DubinsWrapper dubins_wrapper = DubinsWrapper();
+          dubins_wrapper.fill();
+          dubins_plan.append();
         }
 
         // TODO initialize stats object with results from planner
