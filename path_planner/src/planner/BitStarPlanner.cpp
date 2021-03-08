@@ -283,19 +283,6 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
 
         // TODO initialize stats object with results from planner
 
-        Planner::Stats stats = {
-          0,    // STUB
-          0,    // STUB
-          0,    // STUB
-          0,    // STUB
-          0.0,  // STUB
-          0.0,  // STUB
-          0.0,  // STUB
-          0.0,  // STUB
-          0,    // STUB
-          dubins_plan
-        };
-
         int status;
         pid_t wpid = waitpid(pid, &status, 0); // wait for child before terminating
         printf("parent exits\n");
@@ -304,19 +291,19 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
 
     }
 
-    // STUB
-    Planner::Stats results;
-    results.Samples = 0;
-    results.Generated = 0;
-    results.Expanded = 0;
-    results.Iterations = 0;
-    results.PlanFValue = 0.0;
-    results.PlanCollisionPenalty = 0.0;
-    results.PlanTimePenalty = 0.0;
-    results.PlanHValue = 0;
-    results.PlanDepth = 0;
-    results.Plan = DubinsPlan();
+    m_Stats = Stats();
 
-    return results;
+    m_Stats.Samples = 0;
+    m_Stats.Generated = 0;
+    m_Stats.Expanded = 0;
+    m_Stats.Iterations = 0;
+    m_Stats.PlanFValue = 0.0;
+    m_Stats.PlanCollisionPenalty = 0.0;
+    m_Stats.PlanTimePenalty = 0.0;
+    m_Stats.PlanHValue = 0;
+    m_Stats.PlanDepth = 0;
+    m_Stats.Plan = DubinsPlan();
+
+    return m_Stats;
 }
 
