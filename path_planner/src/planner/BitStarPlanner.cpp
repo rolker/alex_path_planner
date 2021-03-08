@@ -235,7 +235,25 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
           raw_plan << chunk << endl;
         }
 
-        // TODO parse planner output
+
+        // Initialize planner instance's m_Stats member,
+        // a field of which will store the plan we're about
+        // to parse from BIT*
+
+        m_Stats = Stats();
+
+        m_Stats.Samples = 0;
+        m_Stats.Generated = 0;
+        m_Stats.Expanded = 0;
+        m_Stats.Iterations = 0;
+        m_Stats.PlanFValue = 0.0;
+        m_Stats.PlanCollisionPenalty = 0.0;
+        m_Stats.PlanTimePenalty = 0.0;
+        m_Stats.PlanHValue = 0;
+        m_Stats.PlanDepth = 0;
+        m_Stats.Plan = DubinsPlan();
+
+        // parse planner output
         // *m_Config.output() << "DEBUG: BitStarPlanner received following raw plan:\n" << endl;
         // *m_Config.output() << raw_plan.str() << endl;
         int batch_number;
@@ -244,7 +262,6 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         raw_plan >> plan_cost;
         int solution_steps_count;
         raw_plan >> solution_steps_count;
-        DubinsPlan dubins_plan = DubinsPlan();
         for (int i = 0; i < solution_steps_count; i++) {
           double qi[3] = {0,0,0};
           double param[3] = {0,0,0};
@@ -278,7 +295,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
           DubinsWrapper dubins_wrapper = DubinsWrapper();
           // TODO figure out correct speed and start time to set in fill() call:
           dubins_wrapper.fill(dubins_path, 1, 1);
-          dubins_plan.append(dubins_wrapper);
+          m_Stats.Plan.append(dubins_wrapper);
         }
 
         // TODO initialize stats object with results from planner
@@ -290,19 +307,6 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         // return wpid == pid && WIFEXITED(status) ? WEXITSTATUS(status) : -1;
 
     }
-
-    m_Stats = Stats();
-
-    m_Stats.Samples = 0;
-    m_Stats.Generated = 0;
-    m_Stats.Expanded = 0;
-    m_Stats.Iterations = 0;
-    m_Stats.PlanFValue = 0.0;
-    m_Stats.PlanCollisionPenalty = 0.0;
-    m_Stats.PlanTimePenalty = 0.0;
-    m_Stats.PlanHValue = 0;
-    m_Stats.PlanDepth = 0;
-    m_Stats.Plan = DubinsPlan();
 
     return m_Stats;
 }
