@@ -1,7 +1,7 @@
 #include <path_planner_common/TrajectoryDisplayerHelper.h>
 
 
-TrajectoryDisplayerHelper::TrajectoryDisplayerHelper(ros::NodeHandle& nodeHandle, ros::Publisher* displayPub): m_transformations(new project11::Transformations(nodeHandle))
+TrajectoryDisplayerHelper::TrajectoryDisplayerHelper(ros::NodeHandle& nodeHandle, ros::Publisher* displayPub): m_transformations(new project11::Transformations)
 {
     m_display_pub = displayPub;
 }

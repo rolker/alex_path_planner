@@ -23,7 +23,7 @@ class NodeBase
 {
 public:
     explicit NodeBase(std::string name):
-            m_action_server(m_node_handle, std::move(name), false), m_CoordinateConverter(m_node_handle)
+            m_action_server(m_node_handle, std::move(name), false)
     {
         m_current_speed = 0.01;
         m_current_heading = 0;
@@ -45,6 +45,10 @@ public:
         m_action_server.start();
 
         m_TrajectoryDisplayer = TrajectoryDisplayerHelper(m_node_handle, &m_display_pub);
+        
+        ros::NodeHandle nh_private("~");
+        nh_private.param<std::string>("map_frame", m_map_frame, "map");
+
     }
 
     ~NodeBase()
@@ -266,6 +270,7 @@ protected:
     ros::ServiceClient m_update_reference_trajectory_client;
 
     project11::Transformations m_CoordinateConverter;
+    std::string m_map_frame;
 };
 
 

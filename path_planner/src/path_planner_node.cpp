@@ -84,8 +84,10 @@ public:
 
         m_Executive->clearRibbons();
 
-        while (!m_CoordinateConverter.haveOrigin())
-            ros::Duration(0.5).sleep();
+        while (!m_CoordinateConverter().canTransform("earth", m_map_frame, ros::Time(0), ros::Duration(0.5)))
+        {
+          //waiting on canTransform
+        }
 
 
         std::cerr << "Received " << goal->path.poses.size() << " points to cover" << std::endl;
