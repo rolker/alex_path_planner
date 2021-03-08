@@ -56,7 +56,13 @@ double convert_eon_to_noe(double eon) {
 }
 
 DubinsPathType dubins_path_type(string path_type_str) {
-
+  if (path_type_str.compare("LSL")) return DubinsPathType::LSL;
+  if (path_type_str.compare("LSR")) return DubinsPathType::LSR;
+  if (path_type_str.compare("RSL")) return DubinsPathType::RSL;
+  if (path_type_str.compare("RSR")) return DubinsPathType::RSR;
+  if (path_type_str.compare("RLR")) return DubinsPathType::RLR;
+  if (path_type_str.compare("LRL")) return DubinsPathType::LRL;
+  throw invalid_argument("Unrecognized path_type_str for dubins_path_type().");
 }
 
 Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
@@ -243,9 +249,9 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
           double qi[3] = {0,0,0};
           double param[3] = {0,0,0};
           double rho = 0;
-          char * dubins_word;
+          string dubins_word_str;
           // ignore standalone first print out of initial configuration (x, y, theta)
-          char * SKIP = "";
+          string SKIP = "";
           raw_plan >> SKIP;
           raw_plan >> SKIP;
           raw_plan >> SKIP;
@@ -261,17 +267,34 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
           // get radius/scaling factor
           raw_plan >> rho;
           // get Dubins word (path type, e.g., "LSL," etc.)
-          raw_plan >> dubins_word;
+          raw_plan >> dubins_word_str;
           // convert to proper DubinsPath struct type
           DubinsPath dubins_path = {
-
-          }
-          const DubinsWrapper dubins_wrapper = DubinsWrapper();
-          dubins_wrapper.fill();
-          dubins_plan.append();
+            {qi[0], qi[1], qi[2]},
+            {param[0], param[1], param[2]},
+            rho,
+            dubins_path_type(dubins_word_str),
+          };
+          DubinsWrapper dubins_wrapper = DubinsWrapper();
+          // TODO figure out correct speed and start time to set in fill() call:
+          dubins_wrapper.fill(dubins_path, 1, 1);
+          dubins_plan.append(dubins_wrapper);
         }
 
         // TODO initialize stats object with results from planner
+
+        Planner::Stats stats = {
+          0,    // STUB
+          0,    // STUB
+          0,    // STUB
+          0,    // STUB
+          0.0,  // STUB
+          0.0,  // STUB
+          0.0,  // STUB
+          0.0,  // STUB
+          0,    // STUB
+          dubins_plan
+        };
 
         int status;
         pid_t wpid = waitpid(pid, &status, 0); // wait for child before terminating
