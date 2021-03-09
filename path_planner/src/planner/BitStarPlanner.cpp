@@ -304,8 +304,6 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
           printf("step %d updated DubinsPlan, which now has totalTime %f\n", i, m_Stats.Plan.totalTime());
         }
 
-        // TODO initialize stats object with results from planner
-
         int status;
         pid_t wpid = waitpid(pid, &status, 0); // wait for child before terminating
         printf("parent exits\n");
