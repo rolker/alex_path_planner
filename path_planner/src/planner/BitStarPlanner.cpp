@@ -254,18 +254,20 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         m_Stats.Plan = DubinsPlan();
 
         // parse planner output
-        // *m_Config.output() << "DEBUG: BitStarPlanner received following raw plan:\n" << endl;
-        // *m_Config.output() << raw_plan.str() << endl;
+        *m_Config.output() << "DEBUG: BitStarPlanner received following raw plan:\n" << endl;
+        *m_Config.output() << raw_plan.str() << "------------" << endl;
         int batch_number;
         raw_plan >> batch_number;
         float plan_cost;
         raw_plan >> plan_cost;
         int solution_steps_count;
         raw_plan >> solution_steps_count;
-        for (int i = 0; i < solution_steps_count; i++) {
+        printf("solution with cost %f has %d steps found in batch %d\n", plan_cost, solution_steps_count, batch_number);
+        for (int i = 1; i <= solution_steps_count; i++) {
           double qi[3] = {0,0,0};
           double param[3] = {0,0,0};
           double rho = 0;
+          printf("step %d initialized qi[0] to %f\n", i, qi[0]);
           string dubins_word_str;
           // ignore standalone first print out of initial configuration (x, y, theta)
           string SKIP = "";
@@ -275,6 +277,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
           SKIP = "";
           // get initial configuration from 
           raw_plan >> qi[0];
+          printf("step %d updated qi[0] to %f\n", i, qi[0]);
           raw_plan >> qi[1];
           raw_plan >> qi[2];
           // get normalized segment lengths
@@ -292,10 +295,13 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             rho,
             dubins_path_type(dubins_word_str),
           };
+          printf("step %d created DubinsPath with qi[0] of %f\n", i, dubins_path.qi[0]);
           DubinsWrapper dubins_wrapper = DubinsWrapper();
           // TODO figure out correct speed and start time to set in fill() call:
           dubins_wrapper.fill(dubins_path, 1, 1);
+          printf("step %d created DubinsWrapper with length %f\n", i, dubins_wrapper.length());
           m_Stats.Plan.append(dubins_wrapper);
+          printf("step %d updated DubinsPlan, which now has totalTime %f\n", i, m_Stats.Plan.totalTime());
         }
 
         // TODO initialize stats object with results from planner
