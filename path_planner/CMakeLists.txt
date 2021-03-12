@@ -17,7 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
         actionlib
         dubins_curves
         dynamic_reconfigure
-        project11_transformations
         geographic_visualization_msgs
         path_planner_common
         )
@@ -94,13 +93,11 @@ add_executable(${PROJECT_NAME}_node src/path_planner_node.cpp)
 
 add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}_node marine_msgs_gencpp)
-add_dependencies(${PROJECT_NAME}_node project11_transformations_gencpp)
 add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_gencfg)
 
 add_executable(controller_test_node src/controller_test_node.cpp)
 add_dependencies(controller_test_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(controller_test_node marine_msgs_gencpp path_planner_utilities)
-add_dependencies(controller_test_node project11_transformations_gencpp)
 
 target_link_libraries(${PROJECT_NAME}_node
         ${catkin_LIBRARIES}

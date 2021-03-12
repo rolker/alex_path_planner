@@ -15,7 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
         genmsg
         dubins_curves
         dynamic_reconfigure
-        project11_transformations
         geographic_visualization_msgs
         )
 
@@ -75,7 +74,6 @@ add_dependencies(path_planner_utilities
         ${${PROJECT_NAME}_EXPORTED_TARGETS}
         ${catkin_EXPORTED_TARGETS}
         marine_msgs_gencpp
-        project11_transformations_gencpp
         )
 
 #catkin_add_gtest(test_planner test/planner/test_planner.cpp)
