@@ -29,7 +29,7 @@ bool DubinsWrapper::containsTime(double time) const {
 void DubinsWrapper::sample(State& s) const {
     if (!containsTime(s.time())) {
         std::stringstream stream;
-        stream << "Invalid time " << std::to_string(s.time()) << " in sample for Dubins path which spans from "
+        stream << "Invalid time " << std::to_string(s.time()) << " in sample for DubinsWrapper which spans from "
             << std::to_string(getStartTime()) << " to " << std::to_string(getEndTime());
         throw std::runtime_error(stream.str());
     }
