@@ -183,6 +183,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             if (!planner_executable_file.good()) {
               throw std::runtime_error("cannot find built executable");
             }
+            // TODO should I close that ifstream since I don't use it?
             char arg1[] = "-v";
             char arg2[] = "dubins";
             char arg3[] = "-u";
