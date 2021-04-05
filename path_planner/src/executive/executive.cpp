@@ -250,6 +250,7 @@ void Executive::planLoop() {
                     }
                 }
                 State expectedStartState(startState);
+                cerr << "DEBUG: Executive::planLoop() about to call stats.Plan.sample() on expectedStartState with time " << expectedStartState.time() << endl;
                 stats.Plan.sample(expectedStartState);
                 if (!startState.isCoLocated(expectedStartState)) {
                     // reset plan because controller says we can't make it

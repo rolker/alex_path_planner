@@ -16,6 +16,8 @@
 #include <geographic_visualization_msgs/GeoVizItem.h>
 #include <project11_transformations/local_services.h>
 
+#include <iostream>
+
 /**
  * Base class for nodes related to the path planner. Holds some shared code and does some shared setup.
  */
@@ -225,6 +227,7 @@ public:
      * @return
      */
     State publishPlan(const DubinsPlan& plan) {
+        std::cerr << "NodeBase.publishPlan called with plan: " << plan.getStartTime() << " to " << plan.getEndTime() << std::endl;
         path_planner_common::UpdateReferenceTrajectoryRequest req;
         path_planner_common::UpdateReferenceTrajectoryResponse res;
         req.plan = convertToPlanMsg(plan);
@@ -233,6 +236,8 @@ public:
             displayPlannerStart(s);
             return s;
         } else {
+            // DEBUG
+            std::cerr << "NodeBase.publishPlan: m_update_refrence_trajectory_client.call() failed; returning new default State()" << std::endl;
             return State();
         }
     }
