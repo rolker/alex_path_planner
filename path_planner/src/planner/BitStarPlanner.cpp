@@ -264,6 +264,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         int solution_steps_count;
         raw_plan >> solution_steps_count;
         printf("solution with cost %f has %d steps found in batch %d\n", plan_cost, solution_steps_count, batch_number);
+        double start_time = m_Config.startStateTime();
         for (int i = 1; i <= solution_steps_count; i++) {
           double qi[3] = {0,0,0};
           double param[3] = {0,0,0};
@@ -299,8 +300,14 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
           printf("step %d created DubinsPath with qi[0] of %f\n", i, dubins_path.qi[0]);
           DubinsWrapper dubins_wrapper = DubinsWrapper();
           // TODO figure out correct speed and start time to set in fill() call:
-          dubins_wrapper.fill(dubins_path, 1, 1);
+          dubins_wrapper.fill(dubins_path, 1, start_time);
           printf("step %d created DubinsWrapper with length %f\n", i, dubins_wrapper.length());
+
+          // Update start_time for next DubinsWrapper by just using end time from this DubinsWrapper
+          // (Note: DubinsWrapper.m_EndTime = m_StartTime + length() / m_Speed)
+          start_time = dubins_wrapper.getEndTime();
+
+
           m_Stats.Plan.append(dubins_wrapper);
           printf("step %d updated DubinsPlan, which now has totalTime %f\n", i, m_Stats.Plan.totalTime());
         }
