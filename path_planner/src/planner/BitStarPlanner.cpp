@@ -243,15 +243,15 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
 
         m_Stats = Stats();
 
-        m_Stats.Samples = 0;
-        m_Stats.Generated = 0;
-        m_Stats.Expanded = 0;
-        m_Stats.Iterations = 0;
-        m_Stats.PlanFValue = 0.0;
+        m_Stats.Samples = 0; // not currently reported by BIT*
+        m_Stats.Generated = 0; // not currently reported by BIT*
+        m_Stats.Expanded = 0; // not currently reported by BIT*
+        m_Stats.Iterations = 0; // batch_number + 1 (see re-assignment below)
+        m_Stats.PlanFValue = 0.0; // f = g + h = plan cost + 0 for BIT* (see re-assignment below)
         m_Stats.PlanCollisionPenalty = 0.0;
         m_Stats.PlanTimePenalty = 0.0;
-        m_Stats.PlanHValue = 0;
-        m_Stats.PlanDepth = 0;
+        m_Stats.PlanHValue = 0; // correct for BIT*, which returns complete plan
+        m_Stats.PlanDepth = 0; // "Isn't really used anymore, as it was just for the UCS planner" -- Alex
         m_Stats.Plan = DubinsPlan();
 
         // parse planner output
@@ -259,8 +259,10 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         *m_Config.output() << raw_plan.str() << "------------" << endl;
         int batch_number;
         raw_plan >> batch_number;
+        m_Stats.Iterations = batch_number + 1;
         float plan_cost;
         raw_plan >> plan_cost;
+        m_Stats.PlanFValue = plan_cost;
         int solution_steps_count;
         raw_plan >> solution_steps_count;
         printf("solution with cost %f has %d steps found in batch %d\n", plan_cost, solution_steps_count, batch_number);
