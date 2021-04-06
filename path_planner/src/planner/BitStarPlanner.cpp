@@ -65,22 +65,6 @@ DubinsPathType dubins_path_type(string path_type_str) {
   throw invalid_argument("Unrecognized path_type_str for dubins_path_type().");
 }
 
-void BitStarPlanner::visualizePlan(const DubinsPlan& plan) {
-    if (m_Config.visualizations()) {
-        std::cerr << "DEBUG: BitStarPlanner.visualizePlan: about to visualize" << std::endl;
-        State s;
-        s.time() = plan.getStartTime();
-        while (s.time() < plan.getEndTime()) {
-            plan.sample(s);
-            m_Config.visualizationStream() << "State: (" << s.toStringRad() << "), f: " << 0 << ", g: " << 0 << ", h: " <<
-                                           0 << " plan" << std::endl;
-            s.time() += 1;
-        }
-    } else {
-        std::cerr << "DEBUG: BitStarPlanner.visualizePlan: visualizations() disabled" << std::endl;
-    }
-}
-
 Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
                          const DubinsPlan& previousPlan, double timeRemaining) {
 
@@ -337,9 +321,6 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         // return wpid == pid && WIFEXITED(status) ? WEXITSTATUS(status) : -1;
 
     }
-
-    // Visualize Plan in CAMP
-    visualizePlan(m_Stats.Plan);
 
     return m_Stats;
 }

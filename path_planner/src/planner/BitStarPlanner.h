@@ -35,8 +35,6 @@ class BitStarPlanner : public Planner {
          * @param config
          */
         void setConfig(PlannerConfig config);
-    protected:
-        void visualizePlan(const DubinsPlan& plan);
 };
 
 
