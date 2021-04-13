@@ -223,7 +223,11 @@ void Executive::planLoop() {
 //            }
 
             // display the trajectory
-            m_TrajectoryPublisher->displayTrajectory(stats.Plan.getHalfSecondSamples(), true, stats.Plan.dangerous());
+            cerr << "DEBUG: about to displayTrajectory" << endl;
+            auto samples_for_display = stats.Plan.getHalfSecondSamples();
+            cerr << "DEBUG: number of samples_for_display: " << samples_for_display.size() << endl;
+            m_TrajectoryPublisher->displayTrajectory(samples_for_display, true, stats.Plan.dangerous());
+            cerr << "DEBUG: just attempted to displayTrajectory" << endl;
 
             if (!stats.Plan.empty()) {
                 failureCount = 0;

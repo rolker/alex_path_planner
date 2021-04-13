@@ -188,6 +188,7 @@ public:
 
     void displayTrajectory(std::vector<State> trajectory, bool plannerTrajectory, bool dangerous) override
     {
+        std::cerr << "DEBUG: path_planner_node.cpp: PathPlanner::displayTrajectory() about to call m_TrajectoryDisplayer.displayTrajectory()" << std::endl;
         m_TrajectoryDisplayer.displayTrajectory(trajectory, plannerTrajectory, !dangerous);
     }
 

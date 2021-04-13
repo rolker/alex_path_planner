@@ -1,5 +1,5 @@
 #include <path_planner_common/TrajectoryDisplayerHelper.h>
-
+#include <stdio.h> // debug output
 
 TrajectoryDisplayerHelper::TrajectoryDisplayerHelper(ros::NodeHandle& nodeHandle, ros::Publisher* displayPub): m_transformations(new project11::Transformations(nodeHandle))
 {
@@ -16,6 +16,7 @@ void TrajectoryDisplayerHelper::displayTrajectory(const std::vector<State>& traj
 
 void TrajectoryDisplayerHelper::displayTrajectory(const std::vector<State>& trajectory, bool plannerTrajectory,
                                                   bool achievable) {
+    std::cerr << "DEBUG: TrajectoryDisplayerHelper::displayTrajectory() just called" << std::endl;
     if (!m_display_pub) throw std::runtime_error("Trajectory displayer not properly initialized");
     geographic_visualization_msgs::GeoVizPointList displayPoints;
     displayPoints.color.b = 1;
@@ -30,6 +31,7 @@ void TrajectoryDisplayerHelper::displayTrajectory(const std::vector<State>& traj
             displayPoints.color.r = 1;
         }
     } else {
+        std::cerr << "DEBUG: TrajectoryDisplayerHelper::displayTrajectory() received planner trajectory" << std::endl;
         // planner trajectory
         displayPoints.color.a = 1;
         displayPoints.size = 3.0;
@@ -40,6 +42,7 @@ void TrajectoryDisplayerHelper::displayTrajectory(const std::vector<State>& traj
         }
     }
     for (const State& s : trajectory) {
+        std::cerr << "DEBUG: TrajectoryDisplayerHelper::displayTrajectory() iterating through trajectory samples" << std::endl;
         geographic_msgs::GeoPoint point;
         displayPoints.points.push_back(convertToLatLong(s));
     }
@@ -49,8 +52,12 @@ void TrajectoryDisplayerHelper::displayTrajectory(const std::vector<State>& traj
     } else {
         geoVizItem.id = "controller_trajectory";
     }
+    std::cerr << "DEBUG: TrajectoryDisplayerHelper::displayTrajectory() set geoVizItem.id to " << geoVizItem.id << std::endl;
+    std::cerr << "DEBUG: displayPoints.size (unclear whether number of points or visual size of each point): " << displayPoints.size << std::endl;
     geoVizItem.lines.push_back(displayPoints);
+    std::cerr << "DEBUG: TrajectoryDisplayerHelper::displayTrajectory() geoVizItem.lines has this number of elements: " << geoVizItem.lines.size() << std::endl;
     m_display_pub->publish(geoVizItem);
+    std::cerr << "DEBUG: TrajectoryDisplayerHelper::displayTrajectory() just published geoVizItem via m_display_pub" << std::endl;
 }
 
 double TrajectoryDisplayerHelper::getTime() const {
