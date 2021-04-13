@@ -27,8 +27,6 @@ public:
         m_current_speed = 0.01;
         m_current_heading = 0;
 
-        m_node_handle.advertise<geographic_visualization_msgs::GeoVizItem>("project11/display",1);
-
         m_controller_msgs_pub = m_node_handle.advertise<std_msgs::String>("controller_msgs",1);
         m_display_pub = m_node_handle.advertise<geographic_visualization_msgs::GeoVizItem>("project11/display",1);
 
