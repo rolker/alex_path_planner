@@ -14,6 +14,7 @@
 #include <path_planner_common/DubinsPath.h>
 #include <geographic_visualization_msgs/GeoVizItem.h>
 #include <project11/tf2_utils.h>
+#include <nav_msgs/Odometry.h>
 
 /**
  * Base class for nodes related to the path planner. Holds some shared code and does some shared setup.
@@ -24,27 +25,24 @@ public:
     explicit NodeBase(std::string name):
             m_action_server(m_node_handle, std::move(name), false)
     {
-        m_current_speed = 0.01;
-        m_current_heading = 0;
-
         m_controller_msgs_pub = m_node_handle.advertise<std_msgs::String>("controller_msgs",1);
         m_display_pub = m_node_handle.advertise<geographic_visualization_msgs::GeoVizItem>("project11/display",1);
 
         m_update_reference_trajectory_client = m_node_handle.serviceClient<path_planner_common::UpdateReferenceTrajectory>("mpc/update_reference_trajectory");
 
-        m_position_sub = m_node_handle.subscribe("position_map", 10, &NodeBase::positionCallback, this);
-        m_heading_sub = m_node_handle.subscribe("heading", 10, &NodeBase::headingCallback, this);
-        m_speed_sub = m_node_handle.subscribe("sog", 10, &NodeBase::speedCallback, this);
         m_piloting_mode_sub = m_node_handle.subscribe("project11/piloting_mode", 10, &NodeBase::pilotingModeCallback, this);
+        m_odom_sub = m_node_handle.subscribe("odom", 10, &NodeBase::odometryCallback, this);
 
         m_action_server.registerGoalCallback(boost::bind(&NodeBase::goalCallback, this));
         m_action_server.registerPreemptCallback(boost::bind(&NodeBase::preemptCallback, this));
         m_action_server.start();
 
-        m_TrajectoryDisplayer = TrajectoryDisplayerHelper(m_node_handle, &m_display_pub);
         
         ros::NodeHandle nh_private("~");
         nh_private.param<std::string>("map_frame", m_map_frame, "map");
+
+        m_TrajectoryDisplayer = TrajectoryDisplayerHelper(m_node_handle, &m_display_pub, m_CoordinateConverter, m_map_frame);
+        
 
     }
 
@@ -63,28 +61,9 @@ public:
      */
     virtual void preemptCallback() = 0;
 
-    /**
-     * Callback to update vehicle position.
-     * @param inmsg
-     */
-    virtual void positionCallback(const geometry_msgs::PoseStamped::ConstPtr &inmsg) = 0;
-
-    /**
-     * Callback to update vehicle heading.
-     * @param inmsg
-     */
-    void headingCallback(const marine_msgs::NavEulerStamped::ConstPtr& inmsg)
+    virtual void odometryCallback(const nav_msgs::Odometry::ConstPtr &inmsg)
     {
-        m_current_heading = inmsg->orientation.heading * M_PI / 180.0;
-    }
-
-    /**
-     * Callback to update vehicle speed.
-     * @param inmsg
-     */
-    void speedCallback(const geometry_msgs::TwistStamped::ConstPtr& inmsg)
-    {
-        m_current_speed = inmsg->twist.linear.x; // this will change once /sog is a vector
+      m_odometry = inmsg;
     }
 
     /**
@@ -250,19 +229,13 @@ protected:
     // know what it is. We start in the done state because we haven't received a goal yet.
     bool m_ActionDone = false, m_Preempted = true;
 
-    // Since speed and heading are updated through different topics than position,
-    // but we need them for state updates to the executive, keep the latest of each
-    // to send when we get a new position
-    double m_current_speed;
-    double m_current_heading;
-
     ros::Publisher m_controller_msgs_pub;
     ros::Publisher m_display_pub;
 
-    ros::Subscriber m_position_sub;
-    ros::Subscriber m_heading_sub;
-    ros::Subscriber m_speed_sub;
+    ros::Subscriber m_odom_sub;
     ros::Subscriber m_piloting_mode_sub;
+    nav_msgs::Odometry::ConstPtr m_odometry;
+
 
     ros::ServiceClient m_update_reference_trajectory_client;
 

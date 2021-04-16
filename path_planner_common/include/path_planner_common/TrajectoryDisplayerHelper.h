@@ -18,7 +18,7 @@ public:
      * Initialize a TrajectoryDisplayer. This sets up a ROS service client for map_to_wgs84. It expects a publisher to
      * /project11/display.
      */
-    TrajectoryDisplayerHelper(ros::NodeHandle& nodeHandle, ros::Publisher* displayPub);
+    TrajectoryDisplayerHelper(ros::NodeHandle& nodeHandle, ros::Publisher* displayPub, project11::Transformations &transformations, const std::string & map_frame);
 
     /**
      * Default constructor to allow for automatic construction. You should assign to your instance using the other
@@ -74,6 +74,7 @@ public:
 protected:
     ros::Publisher* m_display_pub;
     project11::Transformations* m_transformations;
+    std::string m_map_frame;
 };
 
 #endif //SRC_TRAJECTORYDISPLAYERUTILITIES_H

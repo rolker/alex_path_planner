@@ -371,6 +371,7 @@ void Executive::refreshMap(const std::string& pathToMapFile, double latitude, do
 void Executive::addRibbon(double x1, double y1, double x2, double y2) {
     std::lock_guard<std::mutex> lock(m_RibbonManagerMutex);
     m_RibbonManager.add(x1, y1, x2, y2);
+    std::cerr << "Executive::addRibbon: " << x1 << ", " << y1 << " - " << x2 << ", " << y2 << std::endl;
 }
 
 //std::vector<Distribution> Executive::inventDistributions(State obstacle) {

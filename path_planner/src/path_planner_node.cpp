@@ -79,13 +79,12 @@ public:
 //        return;
         publishControllerMessage("start sending controls");
 
-        m_current_speed = goal->speed;
-
         m_Executive->clearRibbons();
 
         while (!m_CoordinateConverter().canTransform("earth", m_map_frame, ros::Time(0), ros::Duration(0.5)))
         {
           //waiting on canTransform
+          ROS_WARN_STREAM("Waiting on earth to " << m_map_frame << " transform");
         }
 
 
@@ -95,8 +94,8 @@ public:
             // assume points represent track-line pairs, and that each line gets two points (they don't share points)
             // this will skip every other line the way the mission manager currently sends track lines, but allows for
             // lines to not be connected
-            geometry_msgs::PointStamped::_point_type start = m_CoordinateConverter.wgs84_to_map(goal->path.poses[i].pose.position);
-            geometry_msgs::PointStamped::_point_type end = m_CoordinateConverter.wgs84_to_map(goal->path.poses[i + 1].pose.position);
+            geometry_msgs::PointStamped::_point_type start = m_CoordinateConverter.wgs84_to_map(goal->path.poses[i].pose.position, m_map_frame);
+            geometry_msgs::PointStamped::_point_type end = m_CoordinateConverter.wgs84_to_map(goal->path.poses[i + 1].pose.position, m_map_frame);
 
             m_Executive->addRibbon(start.x, start.y, end.x, end.y);
         }
@@ -125,13 +124,13 @@ public:
         clearDisplay();
     }
 
-    void positionCallback(const geometry_msgs::PoseStamped::ConstPtr &inmsg) override
+    void odometryCallback(const nav_msgs::Odometry::ConstPtr &inmsg) override
     {
         m_Executive->updateCovered(
-                inmsg->pose.position.x,
-                inmsg->pose.position.y,
-                m_current_speed,
-                m_current_heading,
+                inmsg->pose.pose.position.x,
+                inmsg->pose.pose.position.y,
+                project11::speedOverGround(inmsg->twist.twist.linear),
+                project11::quaternionToHeadingDegrees(inmsg->pose.pose.orientation),
                 m_TrajectoryDisplayer.getTime());
 //                inmsg->header.stamp.toNSec() / 1.0e9);
 
@@ -143,7 +142,7 @@ public:
     {
         State obstacle;
 
-        auto point = m_CoordinateConverter.wgs84_to_map(inmsg->position);
+        auto point = m_CoordinateConverter.wgs84_to_map(inmsg->position, m_map_frame);
 
         // TODO! -- this assumes position is in the center of the contact. The message allows for that not to be the
         //  case but it always will be for my tests. To fix it you'd just need to shift the position over a bit based

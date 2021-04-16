@@ -1,7 +1,7 @@
 #include <path_planner_common/TrajectoryDisplayerHelper.h>
 
 
-TrajectoryDisplayerHelper::TrajectoryDisplayerHelper(ros::NodeHandle& nodeHandle, ros::Publisher* displayPub): m_transformations(new project11::Transformations)
+TrajectoryDisplayerHelper::TrajectoryDisplayerHelper(ros::NodeHandle& nodeHandle, ros::Publisher* displayPub, project11::Transformations &transformations, const std::string & map_frame): m_transformations(&transformations), m_map_frame(map_frame)
 {
     m_display_pub = displayPub;
 }
@@ -65,7 +65,7 @@ geographic_msgs::GeoPoint TrajectoryDisplayerHelper::convertToLatLong(const Stat
     point.x = state.x();
     point.y = state.y();
     
-    return m_transformations->map_to_wgs84(point);
+    return m_transformations->map_to_wgs84(point, m_map_frame);
 }
 
 path_planner_common::StateMsg TrajectoryDisplayerHelper::convertToStateMsg(const State& state) {

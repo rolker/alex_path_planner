@@ -35,8 +35,6 @@ public:
 
         publishControllerMessage("start sending controls");
 
-        m_current_speed = goal->speed;
-
         std::vector<std::pair<double, double>> currentPath;
 
         std::cerr << "Received " << goal->path.poses.size() - 1 << " survey line(s)" << std::endl;
@@ -111,7 +109,7 @@ public:
         clearDisplay();
     }
 
-    void positionCallback(const geometry_msgs::PoseStamped::ConstPtr &inmsg) override
+    void odometryCallback(const nav_msgs::Odometry::ConstPtr &inmsg) override
     {
         if (m_ActionDone) allDone();
     }
