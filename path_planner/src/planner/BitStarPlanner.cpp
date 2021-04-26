@@ -103,7 +103,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     for (int row = 0; row < num_rows; row++) {
       for (int col = 0; col < num_cols; col++) {
         // QUESTION should I actually pass (double row.1, double col.1) to isBlocked to make sure I'm on the intended side of each cell boundary?
-        if (m_Config.map()->isBlocked(col, row)) {
+        if (m_Config.map()->isBlocked(col * mapResolution, row * mapResolution)) {
           world << "#";
         } else {
           world << "_";
@@ -114,16 +114,14 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     }
 
     // start coordinates
-    // TODO remove division by resolution once BIT* code is updated to handle resolution
-    world << start.x() / mapResolution << endl;
-    world << start.y() / mapResolution << endl;
+    world << start.x() << endl;
+    world << start.y() << endl;
     double start_heading = convert_eon_to_noe(start.heading());
 
     // goal coordinates
     State goal = selectGoal(start, ribbonManager);
-    // TODO remove division by resolution once BIT* code is updated to handle resolution
-    world << goal.x() / mapResolution << endl;
-    world << goal.y() / mapResolution << endl;
+    world << goal.x() << endl;
+    world << goal.y() << endl;
     double goal_heading = convert_eon_to_noe(goal.heading());
 
     std::string world_str = world.str();
