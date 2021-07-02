@@ -114,14 +114,10 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     }
 
     // start coordinates
-    world << start.x() << endl;
-    world << start.y() << endl;
     double start_heading = convert_eon_to_noe(start.heading());
 
     // goal coordinates
     State goal = selectGoal(start, ribbonManager);
-    world << goal.x() << endl;
-    world << goal.y() << endl;
     double goal_heading = convert_eon_to_noe(goal.heading());
 
     std::string world_str = world.str();
@@ -187,19 +183,26 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             char arg3[] = "-u";
             char arg4[] = "1";
             char arg5[] = "-t";
+            // hard-coded time limit
             char arg6[] = "1.9";
-            char arg7[] = "-s";
-            std::string start_heading_str = std::to_string(start_heading);
-            const char* arg8 = start_heading_str.c_str();
-            char arg9[] = "-g";
-            std::string goal_heading_str = std::to_string(goal_heading);
-            const char* arg10 = goal_heading_str.c_str();
+            char arg7[] = "--start-x";
+            const char* arg8 = std::to_string(start.x()).c_str();
+            char arg9[] = "--start-y";
+            const char* arg10 = std::to_string(start.y()).c_str();
+            char arg11[] = "--start-theta";
+            const char* arg12 = std::to_string(start_heading).c_str();
+            char arg13[] = "--goal-x";
+            const char* arg14 = std::to_string(goal.x()).c_str();
+            char arg15[] = "--goal-x";
+            const char* arg16 = std::to_string(goal.y()).c_str();
+            char arg17[] = "--goal-theta";
+            const char* arg18 = std::to_string(goal_heading).c_str();
 
             // TODO add seed for RNG for reproducibility during development: -e 0
 
             *m_Config.output() << "DEBUG: BitStarPlanner will make this system call: " << arg0 << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << " " << arg5 << " " << arg6 << " " << arg7 << " " << arg8 << " " << arg9 << " " << arg10 << endl;
 
-            execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, NULL);
+            execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, NULL);
         }
 
     } else {
