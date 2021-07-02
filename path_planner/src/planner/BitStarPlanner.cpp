@@ -98,8 +98,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
 
     // start build ascii world string for BIT* planner app to consume via stdin
     std::ostringstream world;
-    world << num_cols << endl;
-    world << num_rows << endl;
+    world << mapResolution << endl;
     for (int row = 0; row < num_rows; row++) {
       for (int col = 0; col < num_cols; col++) {
         // QUESTION should I actually pass (double row.1, double col.1) to isBlocked to make sure I'm on the intended side of each cell boundary?
