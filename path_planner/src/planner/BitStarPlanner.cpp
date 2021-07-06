@@ -170,7 +170,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             // absolute path to BIT* app executable on Steve's machine
             // (Since ROS nodes run in unique temporary directories, e.g. /tmp/rosmon-node-UDIhm6, there is no stable relative path
             // with current way that BIT* app executable is in bit_star_planner submodule of path_planner submodule of Project 11 repo.)
-            char arg0[] = "/home/sjw/scm/project11/catkin_ws/src/path_planner/path_planner/src/planner/bit_star_planner/target/release/app";
+            char arg0[] = "/home/aifs2/sjw/code/project11/catkin_ws/src/path_planner/path_planner/src/planner/bit_star_planner/target/release/app";
             // confirm file is present (coarse check)
             ifstream planner_executable_file(arg0);
             if (!planner_executable_file.good()) {
