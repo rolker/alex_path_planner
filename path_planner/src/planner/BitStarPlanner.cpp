@@ -56,12 +56,30 @@ double convert_eon_to_noe(double eon) {
 }
 
 DubinsPathType dubins_path_type(string path_type_str) {
-  if (path_type_str.compare("LSL")) return DubinsPathType::LSL;
-  if (path_type_str.compare("LSR")) return DubinsPathType::LSR;
-  if (path_type_str.compare("RSL")) return DubinsPathType::RSL;
-  if (path_type_str.compare("RSR")) return DubinsPathType::RSR;
-  if (path_type_str.compare("RLR")) return DubinsPathType::RLR;
-  if (path_type_str.compare("LRL")) return DubinsPathType::LRL;
+  if (path_type_str.compare("LSL") == 0) {
+    cerr << "dubins_path_type: detected LSL" << endl;
+    return DubinsPathType::LSL;
+    }
+  if (path_type_str.compare("LSR") == 0) {
+    cerr << "dubins_path_type: detected LSR" << endl;
+    return DubinsPathType::LSR;
+    }
+  if (path_type_str.compare("RSL") == 0) {
+    cerr << "dubins_path_type: detected RSL" << endl;
+    return DubinsPathType::RSL;
+    }
+  if (path_type_str.compare("RSR") == 0) {
+    cerr << "dubins_path_type: detected RSR" << endl;
+    return DubinsPathType::RSR;
+    }
+  if (path_type_str.compare("RLR") == 0) {
+    cerr << "dubins_path_type: detected RLR" << endl;
+    return DubinsPathType::RLR;
+    }
+  if (path_type_str.compare("LRL") == 0) {
+    cerr << "dubins_path_type: detected LRL" << endl;
+    return DubinsPathType::LRL;
+    }
   throw invalid_argument("Unrecognized path_type_str for dubins_path_type().");
 }
 
@@ -301,10 +319,14 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             rho,
             dubins_path_type(dubins_word_str),
           };
-          printf("step %d created DubinsPath with qi[0] of %f\n", i, dubins_path.qi[0]);
+          printf("step %d created DubinsPath with qi[0] of %f (%s: %i)\n", i, dubins_path.qi[0], dubins_word_str.c_str(), dubins_path.type);
           DubinsWrapper dubins_wrapper = DubinsWrapper();
           // TODO figure out correct speed and start time to set in fill() call:
-          dubins_wrapper.fill(dubins_path, 1, start_time);
+          dubins_wrapper.fill(
+            dubins_path,
+            1,
+            start_time
+          );
           printf("step %d created DubinsWrapper with length %f\n", i, dubins_wrapper.length());
 
           // Update start_time for next DubinsWrapper by just using end time from this DubinsWrapper
@@ -313,7 +335,12 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
 
 
           m_Stats.Plan.append(dubins_wrapper);
-          printf("step %d updated DubinsPlan, which now has totalTime %f\n", i, m_Stats.Plan.totalTime());
+          printf(
+            "step %d updated DubinsPlan (with a %i DubinsWrapper). DubinsPlan now has totalTime %f\n",
+            i,
+            dubins_wrapper.unwrap().type,
+            m_Stats.Plan.totalTime()
+          );
         }
 
         int status;
@@ -323,6 +350,9 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         // return wpid == pid && WIFEXITED(status) ? WEXITSTATUS(status) : -1;
 
     }
+
+    // DEBUG
+
 
     return m_Stats;
 }
