@@ -183,7 +183,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             char arg4[] = "1";
             char arg5[] = "-t";
             // hard-coded time limit
-            char arg6[] = "1.9";
+            char arg6[] = "10.0";
             char arg7[] = "--start-x";
             const char* arg8 = std::to_string(start.x()).c_str();
             char arg9[] = "--start-y";
@@ -192,14 +192,14 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             const char* arg12 = std::to_string(start_heading).c_str();
             char arg13[] = "--goal-x";
             const char* arg14 = std::to_string(goal.x()).c_str();
-            char arg15[] = "--goal-x";
+            char arg15[] = "--goal-y";
             const char* arg16 = std::to_string(goal.y()).c_str();
             char arg17[] = "--goal-theta";
             const char* arg18 = std::to_string(goal_heading).c_str();
 
             // TODO add seed for RNG for reproducibility during development: -e 0
 
-            *m_Config.output() << "DEBUG: BitStarPlanner will make this system call: " << arg0 << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << " " << arg5 << " " << arg6 << " " << arg7 << " " << arg8 << " " << arg9 << " " << arg10 << endl;
+            *m_Config.output() << "DEBUG: BitStarPlanner CHILD will make this system call: " << arg0 << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << " " << arg5 << " " << arg6 << " " << arg7 << " " << arg8 << " " << arg9 << " " << arg10 << " " << arg11 << " " << arg12 << " " << arg13 << " " << arg14 << " " << arg15 << " " << arg16 << " " << arg17 << " " << arg18 << endl;
 
             execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, NULL);
         }
@@ -231,11 +231,13 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         string chunk;
         stringstream raw_plan;
         // WORKS: exits loop after message received
+        *m_Config.output() << "DEBUG: BitStarPlanner about to get plan chunks: " << endl;
         while (std::getline(*reader, chunk)) {
           // STUB
+          *m_Config.output() << "DEBUG: BitStarPlanner got plan chunk: " << chunk << endl;
           raw_plan << chunk << endl;
         }
-
+        *m_Config.output() << "DEBUG: BitStarPlanner thinks it got all the plan chunks: " << endl;
 
         // Initialize planner instance's m_Stats member,
         // a field of which will store the plan we're about
