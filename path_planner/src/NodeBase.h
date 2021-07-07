@@ -219,7 +219,7 @@ public:
         }
         planMsg.endtime = plan.getEndTime();
         std::cerr << "DEBUG: NodeBase.convertToPlanMsg about to return this planMsg:\n" << std::endl;
-        std::cerr << "DEBUG: number of paths: " << planMsg.paths.size() << " ... end time: " << planMsg.endtime << std::endl;
+        std::cerr << "DEBUG:    number of paths: " << planMsg.paths.size() << " ... end time: " << planMsg.endtime << std::endl;
         for (const auto& p : planMsg.paths) {
             std::cerr << "DEBUG: a path starts at " << p.start_time << std::endl;
         }
