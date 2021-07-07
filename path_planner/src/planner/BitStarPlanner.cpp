@@ -231,13 +231,13 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         string chunk;
         stringstream raw_plan;
         // WORKS: exits loop after message received
-        *m_Config.output() << "DEBUG: BitStarPlanner about to get plan chunks: " << endl;
+        // *m_Config.output() << "DEBUG: BitStarPlanner about to get plan chunks: " << endl;
         while (std::getline(*reader, chunk)) {
           // STUB
-          *m_Config.output() << "DEBUG: BitStarPlanner got plan chunk: " << chunk << endl;
+          // *m_Config.output() << "DEBUG: BitStarPlanner got plan chunk: " << chunk << endl;
           raw_plan << chunk << endl;
         }
-        *m_Config.output() << "DEBUG: BitStarPlanner thinks it got all the plan chunks: " << endl;
+        // *m_Config.output() << "DEBUG: BitStarPlanner thinks it got all the plan chunks: " << endl;
 
         // Initialize planner instance's m_Stats member,
         // a field of which will store the plan we're about

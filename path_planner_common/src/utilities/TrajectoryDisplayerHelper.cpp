@@ -42,7 +42,7 @@ void TrajectoryDisplayerHelper::displayTrajectory(const std::vector<State>& traj
         }
     }
     for (const State& s : trajectory) {
-        std::cerr << "DEBUG: TrajectoryDisplayerHelper::displayTrajectory() iterating through trajectory samples" << std::endl;
+        // std::cerr << "DEBUG: TrajectoryDisplayerHelper::displayTrajectory() iterating through trajectory samples" << std::endl;
         geographic_msgs::GeoPoint point;
         displayPoints.points.push_back(convertToLatLong(s));
     }
