@@ -122,8 +122,10 @@ void Executive::planLoop() {
 
             // if the state estimator returned an error naively do it ourselves
             if (startState.time() == -1) {
+                cerr << "DEBUG: startStart.time() == -1. Going to push m_LastState from " << m_LastState.time() << "." << endl;
                 startState = m_LastState.push(
                         m_TrajectoryPublisher->getTime() + c_PlanningTimeSeconds - m_LastState.time());
+                cerr << "           Now: startState.time() = " << startState.time() << "." << endl;
             }
 
             // copy the map pointer if it's been set (don't wait for the mutex because it may be a while)
@@ -233,7 +235,9 @@ void Executive::planLoop() {
                 failureCount = 0;
                 // send trajectory to controller
                 try {
+                    cerr << "DEBUG: about to attempt to publish plan to controller" << endl;
                     startState = m_TrajectoryPublisher->publishPlan(stats.Plan);
+                    cerr << "DEBUG: after attempting to publish plan, received new startState with time " << startState.time() << endl;
                 } catch (const std::exception& e) {
                     cerr << "Exception thrown while updating controller's reference trajectory:" << endl;
                     cerr << e.what() << endl;
