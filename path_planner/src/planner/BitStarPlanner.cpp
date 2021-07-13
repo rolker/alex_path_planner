@@ -123,7 +123,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     for (int row = 0; row < num_rows; row++) {
       for (int col = 0; col < num_cols; col++) {
         // QUESTION should I actually pass (double row.1, double col.1) to isBlocked to make sure I'm on the intended side of each cell boundary?
-        if (m_Config.map()->isBlocked(col * mapResolution, row * mapResolution)) {
+        if (m_Config.map()->isBlocked(col * mapResolution, (num_rows - row - 1) * mapResolution)) {
           world << "#";
         } else {
           world << "_";
