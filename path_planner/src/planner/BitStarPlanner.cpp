@@ -91,6 +91,9 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     // copied from Planner.cpp
     m_Config = std::move(config);
 
+    // copied from AStarPlanner.cpp: AStarPlanner::plan()
+    m_Config.setStartStateTime(start.time());
+
     // TODO pick go pose from ribbon manager
     // per Roland: pick start point of first line in list
 
@@ -287,6 +290,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         raw_plan >> solution_steps_count;
         printf("solution with cost %f has %d steps found in batch %d\n", plan_cost, solution_steps_count, batch_number);
         double start_time = m_Config.startStateTime();
+        std::cerr << "BitStarPlanner.plan: got initial start_time of " << start_time << " from m_Config.startStateTime()." << std::endl;
         for (int i = 1; i <= solution_steps_count; i++) {
           double qi[3] = {0,0,0};
           double param[3] = {0,0,0};
@@ -330,6 +334,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
           printf("step %d created DubinsWrapper with length %f\n", i, dubins_wrapper.length());
 
           // Update start_time for next DubinsWrapper by just using end time from this DubinsWrapper
+          std::cerr << "BitStarPlanner.plan: updating start_time from " << start_time << " to " << dubins_wrapper.getEndTime() << std::endl;
           // (Note: DubinsWrapper.m_EndTime = m_StartTime + length() / m_Speed)
           start_time = dubins_wrapper.getEndTime();
 
