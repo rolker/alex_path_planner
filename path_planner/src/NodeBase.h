@@ -218,10 +218,10 @@ public:
             planMsg.paths.push_back(path);
         }
         planMsg.endtime = plan.getEndTime();
-        std::cerr << "DEBUG: NodeBase.convertToPlanMsg about to return this planMsg:\n" << std::endl;
-        std::cerr << "DEBUG:    number of paths: " << planMsg.paths.size() << " ... end time: " << planMsg.endtime << std::endl;
+        // std::cerr << "DEBUG: NodeBase.convertToPlanMsg about to return this planMsg:\n" << std::endl;
+        // std::cerr << "DEBUG:    number of paths: " << planMsg.paths.size() << " ... end time: " << planMsg.endtime << std::endl;
         for (const auto& p : planMsg.paths) {
-            std::cerr << "DEBUG: a path starts at time t = " << p.start_time << std::endl;
+            // std::cerr << "DEBUG: a path starts at time t = " << p.start_time << std::endl;
         }
         // std::cerr << "DEBUG: start time: " << planMsg.start_time << std::endl;
         // std::cerr << "DEBUG: end time: " << planMsg.endtime << std::endl;
@@ -234,7 +234,7 @@ public:
      * @return
      */
     State publishPlan(const DubinsPlan& plan) {
-        std::cerr << "NodeBase.publishPlan called with plan: " << plan.getStartTime() << " to " << plan.getEndTime() << std::endl;
+        // std::cerr << "NodeBase.publishPlan called with plan: " << plan.getStartTime() << " to " << plan.getEndTime() << std::endl;
         path_planner_common::UpdateReferenceTrajectoryRequest req;
         path_planner_common::UpdateReferenceTrajectoryResponse res;
         req.plan = convertToPlanMsg(plan);

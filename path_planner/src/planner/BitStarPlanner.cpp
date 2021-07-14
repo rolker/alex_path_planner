@@ -57,27 +57,27 @@ double convert_eon_to_noe(double eon) {
 
 DubinsPathType dubins_path_type(string path_type_str) {
   if (path_type_str.compare("LSL") == 0) {
-    cerr << "dubins_path_type: detected LSL" << endl;
+    // cerr << "dubins_path_type: detected LSL" << endl;
     return DubinsPathType::LSL;
     }
   if (path_type_str.compare("LSR") == 0) {
-    cerr << "dubins_path_type: detected LSR" << endl;
+    // cerr << "dubins_path_type: detected LSR" << endl;
     return DubinsPathType::LSR;
     }
   if (path_type_str.compare("RSL") == 0) {
-    cerr << "dubins_path_type: detected RSL" << endl;
+    // cerr << "dubins_path_type: detected RSL" << endl;
     return DubinsPathType::RSL;
     }
   if (path_type_str.compare("RSR") == 0) {
-    cerr << "dubins_path_type: detected RSR" << endl;
+    // cerr << "dubins_path_type: detected RSR" << endl;
     return DubinsPathType::RSR;
     }
   if (path_type_str.compare("RLR") == 0) {
-    cerr << "dubins_path_type: detected RLR" << endl;
+    // cerr << "dubins_path_type: detected RLR" << endl;
     return DubinsPathType::RLR;
     }
   if (path_type_str.compare("LRL") == 0) {
-    cerr << "dubins_path_type: detected LRL" << endl;
+    // cerr << "dubins_path_type: detected LRL" << endl;
     return DubinsPathType::LRL;
     }
   throw invalid_argument("Unrecognized path_type_str for dubins_path_type().");
@@ -86,7 +86,7 @@ DubinsPathType dubins_path_type(string path_type_str) {
 Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
                          const DubinsPlan& previousPlan, double timeRemaining) {
 
-    *config.output() << "DEBUG: BitStarPlanner::plan() starting" << endl;
+    // *config.output() << "DEBUG: BitStarPlanner::plan() starting" << endl;
     config.output()->flush();
     // copied from Planner.cpp
     m_Config = std::move(config);
@@ -104,18 +104,18 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     //  an array of four doubles, "(minX, maxX, minY, maxY)"
     //  default value: {-DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX}
     // GridWorldMap overwrites these values based on map file dimensions and resolution.
-    *m_Config.output() << "DEBUG: BitStarPlanner::plan() about to get extremes" << endl;
+    // *m_Config.output() << "DEBUG: BitStarPlanner::plan() about to get extremes" << endl;
     m_Config.output()->flush();
     auto mapExtremes = m_Config.map()->extremes();
-    *m_Config.output() << "DEBUG: BitStarPlanner::plan() just got extremes: " << mapExtremes[0] << "," << mapExtremes[1] << "," << mapExtremes[2] << "," << mapExtremes[3] << "," << endl;
+    // *m_Config.output() << "DEBUG: BitStarPlanner::plan() just got extremes: " << mapExtremes[0] << "," << mapExtremes[1] << "," << mapExtremes[2] << "," << mapExtremes[3] << "," << endl;
     config.output()->flush();
     auto mapResolution = m_Config.map()->resolution();
-    *m_Config.output() << "DEBUG: BitStarPlanner::plan() just got resolution: " << mapResolution << endl;
+    // *m_Config.output() << "DEBUG: BitStarPlanner::plan() just got resolution: " << mapResolution << endl;
     m_Config.output()->flush();
     // convert to number of rows and number of columns, so we'll know what ranges to index into config.map()->isBlocked()
     int num_cols = (mapExtremes[1] - mapExtremes[0]) / mapResolution;
     int num_rows = (mapExtremes[3] - mapExtremes[2]) / mapResolution;
-    *m_Config.output() << "DEBUG: BitStarPlanner::plan() thinks the static obstacle map has " << num_cols << " columns and " << num_rows << " rows" << endl;
+    // *m_Config.output() << "DEBUG: BitStarPlanner::plan() thinks the static obstacle map has " << num_cols << " columns and " << num_rows << " rows" << endl;
 
     // start build ascii world string for BIT* planner app to consume via stdin
     std::ostringstream world;
@@ -142,7 +142,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
 
     std::string world_str = world.str();
 
-    *m_Config.output() << "DEBUG: BitStarPlanner constructed world:\n" << world_str << endl;
+    // *m_Config.output() << "DEBUG: BitStarPlanner constructed world:\n" << world_str << endl;
 
     // STUB
     // throw std::runtime_error("TO BE IMPLEMENTED");
@@ -222,7 +222,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
 
             // TODO add seed for RNG for reproducibility during development: -e 0
 
-            *m_Config.output() << "DEBUG: BitStarPlanner CHILD will make this system call: " << arg0 << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << " " << arg5 << " " << arg6 << " " << arg7 << " " << arg8 << " " << arg9 << " " << arg10 << " " << arg11 << " " << arg12 << " " << arg13 << " " << arg14 << " " << arg15 << " " << arg16 << " " << arg17 << " " << arg18 << " " << arg19 << " " << arg20 << endl;
+            // *m_Config.output() << "DEBUG: BitStarPlanner CHILD will make this system call: " << arg0 << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << " " << arg5 << " " << arg6 << " " << arg7 << " " << arg8 << " " << arg9 << " " << arg10 << " " << arg11 << " " << arg12 << " " << arg13 << " " << arg14 << " " << arg15 << " " << arg16 << " " << arg17 << " " << arg18 << " " << arg19 << " " << arg20 << endl;
 
             execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, NULL);
         }
@@ -280,8 +280,8 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         m_Stats.Plan = DubinsPlan();
 
         // parse planner output
-        *m_Config.output() << "DEBUG: BitStarPlanner received following raw plan:\n" << endl;
-        *m_Config.output() << raw_plan.str() << "------------" << endl;
+        // *m_Config.output() << "DEBUG: BitStarPlanner received following raw plan:\n" << endl;
+        // *m_Config.output() << raw_plan.str() << "------------" << endl;
         int batch_number;
         raw_plan >> batch_number;
         m_Stats.Iterations = batch_number + 1;
@@ -290,14 +290,14 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         m_Stats.PlanFValue = plan_cost;
         int solution_steps_count;
         raw_plan >> solution_steps_count;
-        printf("solution with cost %f has %d steps found in batch %d\n", plan_cost, solution_steps_count, batch_number);
+        printf("BitStarPlanner.plan(): solution with cost %f has %d steps found in batch %d\n", plan_cost, solution_steps_count, batch_number);
         double start_time = m_Config.startStateTime();
-        std::cerr << "BitStarPlanner.plan: got initial start_time of " << start_time << " from m_Config.startStateTime()." << std::endl;
+        // std::cerr << "BitStarPlanner.plan: got initial start_time of " << start_time << " from m_Config.startStateTime()." << std::endl;
         for (int i = 1; i <= solution_steps_count; i++) {
           double qi[3] = {0,0,0};
           double param[3] = {0,0,0};
           double rho = 0;
-          printf("step %d initialized qi[0] to %f\n", i, qi[0]);
+          // printf("step %d initialized qi[0] to %f\n", i, qi[0]);
           string dubins_word_str;
           // ignore standalone first print out of initial configuration (x, y, theta)
           string SKIP = "";
@@ -307,7 +307,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
           SKIP = "";
           // get initial configuration from 
           raw_plan >> qi[0];
-          printf("step %d updated qi[0] to %f\n", i, qi[0]);
+          // printf("step %d updated qi[0] to %f\n", i, qi[0]);
           raw_plan >> qi[1];
           raw_plan >> qi[2];
           // get normalized segment lengths
@@ -325,7 +325,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             rho,
             dubins_path_type(dubins_word_str),
           };
-          printf("step %d created DubinsPath with qi[0] of %f (%s: %i)\n", i, dubins_path.qi[0], dubins_word_str.c_str(), dubins_path.type);
+          // printf("step %d created DubinsPath with qi[0] of %f (%s: %i)\n", i, dubins_path.qi[0], dubins_word_str.c_str(), dubins_path.type);
           DubinsWrapper dubins_wrapper = DubinsWrapper();
           // TODO figure out correct speed and start time to set in fill() call:
           dubins_wrapper.fill(
@@ -333,26 +333,26 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             m_Config.maxSpeed(),
             start_time
           );
-          printf("step %d created DubinsWrapper with length %f\n", i, dubins_wrapper.length());
+          // printf("step %d created DubinsWrapper with length %f\n", i, dubins_wrapper.length());
 
           // Update start_time for next DubinsWrapper by just using end time from this DubinsWrapper
-          std::cerr << "BitStarPlanner.plan: updating start_time from " << start_time << " to " << dubins_wrapper.getEndTime() << std::endl;
+          // std::cerr << "BitStarPlanner.plan: updating start_time from " << start_time << " to " << dubins_wrapper.getEndTime() << std::endl;
           // (Note: DubinsWrapper.m_EndTime = m_StartTime + length() / m_Speed)
           start_time = dubins_wrapper.getEndTime();
 
 
           m_Stats.Plan.append(dubins_wrapper);
-          printf(
-            "step %d updated DubinsPlan (with a %i DubinsWrapper). DubinsPlan now has totalTime %f\n",
-            i,
-            dubins_wrapper.unwrap().type,
-            m_Stats.Plan.totalTime()
-          );
+          // printf(
+          //   "step %d updated DubinsPlan (with a %i DubinsWrapper). DubinsPlan now has totalTime %f\n",
+          //   i,
+          //   dubins_wrapper.unwrap().type,
+          //   m_Stats.Plan.totalTime()
+          // );
         }
 
         int status;
         pid_t wpid = waitpid(pid, &status, 0); // wait for child before terminating
-        printf("parent exits\n");
+        // printf("parent exits\n");
         // deprecated (from development prior to incorporating into Project 11):
         // return wpid == pid && WIFEXITED(status) ? WEXITSTATUS(status) : -1;
 

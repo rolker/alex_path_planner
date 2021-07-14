@@ -122,10 +122,10 @@ void Executive::planLoop() {
 
             // if the state estimator returned an error naively do it ourselves
             if (startState.time() == -1) {
-                cerr << "DEBUG: startStart.time() == -1. Going to push m_LastState from " << m_LastState.time() << "." << endl;
+                // cerr << "DEBUG: startStart.time() == -1. Going to push m_LastState from " << m_LastState.time() << "." << endl;
                 startState = m_LastState.push(
                         m_TrajectoryPublisher->getTime() + c_PlanningTimeSeconds - m_LastState.time());
-                cerr << "           Now: startState.time() = " << startState.time() << "." << endl;
+                // cerr << "           Now: startState.time() = " << startState.time() << "." << endl;
             }
 
             // copy the map pointer if it's been set (don't wait for the mutex because it may be a while)
@@ -225,19 +225,19 @@ void Executive::planLoop() {
 //            }
 
             // display the trajectory
-            cerr << "DEBUG: about to displayTrajectory" << endl;
+            // cerr << "DEBUG: about to displayTrajectory" << endl;
             auto samples_for_display = stats.Plan.getHalfSecondSamples();
-            cerr << "DEBUG: number of samples_for_display: " << samples_for_display.size() << endl;
+            // cerr << "DEBUG: number of samples_for_display: " << samples_for_display.size() << endl;
             m_TrajectoryPublisher->displayTrajectory(samples_for_display, true, stats.Plan.dangerous());
-            cerr << "DEBUG: just attempted to displayTrajectory" << endl;
+            // cerr << "DEBUG: just attempted to displayTrajectory" << endl;
 
             if (!stats.Plan.empty()) {
                 failureCount = 0;
                 // send trajectory to controller
                 try {
-                    cerr << "DEBUG: about to attempt to publish plan to controller" << endl;
+                    // cerr << "DEBUG: about to attempt to publish plan to controller" << endl;
                     startState = m_TrajectoryPublisher->publishPlan(stats.Plan);
-                    cerr << "DEBUG: after attempting to publish plan, received new startState with time " << startState.time() << endl;
+                    // cerr << "DEBUG: after attempting to publish plan, received new startState with time " << startState.time() << endl;
                 } catch (const std::exception& e) {
                     cerr << "Exception thrown while updating controller's reference trajectory:" << endl;
                     cerr << e.what() << endl;
@@ -258,7 +258,7 @@ void Executive::planLoop() {
                     }
                 }
                 State expectedStartState(startState);
-                cerr << "DEBUG: Executive::planLoop() about to call stats.Plan.sample() on expectedStartState with time " << expectedStartState.time() << endl;
+                // cerr << "DEBUG: Executive::planLoop() about to call stats.Plan.sample() on expectedStartState with time " << expectedStartState.time() << endl;
                 stats.Plan.sample(expectedStartState);
                 if (!startState.isCoLocated(expectedStartState)) {
                     // reset plan because controller says we can't make it
