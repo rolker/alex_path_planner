@@ -217,12 +217,14 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
             const char* arg16 = std::to_string(goal.y()).c_str();
             char arg17[] = "--goal-theta";
             const char* arg18 = std::to_string(goal_heading).c_str();
+            char arg19[] = "--rho";
+            const char* arg20 = std::to_string(m_Config.turningRadius()).c_str();
 
             // TODO add seed for RNG for reproducibility during development: -e 0
 
-            *m_Config.output() << "DEBUG: BitStarPlanner CHILD will make this system call: " << arg0 << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << " " << arg5 << " " << arg6 << " " << arg7 << " " << arg8 << " " << arg9 << " " << arg10 << " " << arg11 << " " << arg12 << " " << arg13 << " " << arg14 << " " << arg15 << " " << arg16 << " " << arg17 << " " << arg18 << endl;
+            *m_Config.output() << "DEBUG: BitStarPlanner CHILD will make this system call: " << arg0 << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << " " << arg5 << " " << arg6 << " " << arg7 << " " << arg8 << " " << arg9 << " " << arg10 << " " << arg11 << " " << arg12 << " " << arg13 << " " << arg14 << " " << arg15 << " " << arg16 << " " << arg17 << " " << arg18 << " " << arg19 << " " << arg20 << endl;
 
-            execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, NULL);
+            execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, NULL);
         }
 
     } else {
