@@ -330,7 +330,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
           // TODO figure out correct speed and start time to set in fill() call:
           dubins_wrapper.fill(
             dubins_path,
-            config.maxSpeed(),
+            m_Config.maxSpeed(),
             start_time
           );
           printf("step %d created DubinsWrapper with length %f\n", i, dubins_wrapper.length());
