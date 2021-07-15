@@ -290,7 +290,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         m_Stats.PlanFValue = plan_cost;
         int solution_steps_count;
         raw_plan >> solution_steps_count;
-        printf("BitStarPlanner.plan(): solution with cost %f has %d steps found in batch %d\n", plan_cost, solution_steps_count, batch_number);
+        printf("%f: BitStarPlanner.plan(): solution with cost %f has %d steps found in batch %d\n", m_Config.now(), plan_cost, solution_steps_count, batch_number);
         double start_time = m_Config.startStateTime();
         // std::cerr << "BitStarPlanner.plan: got initial start_time of " << start_time << " from m_Config.startStateTime()." << std::endl;
         for (int i = 1; i <= solution_steps_count; i++) {

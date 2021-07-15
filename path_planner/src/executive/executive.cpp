@@ -105,6 +105,8 @@ void Executive::planLoop() {
                     break;
                 }
             }
+
+            // TODOSJW: maybe ALTER the following two blocks for BIT*? I.e., we're not checking ribbon coverage, we're just checking if we got to a goal pose. Maybe this would change once we have the point-and-click feature.
             { // and again
                 std::lock_guard<std::mutex> lock1(m_RibbonManagerMutex);
                 if (m_RibbonManager.done()) {
@@ -152,10 +154,13 @@ void Executive::planLoop() {
                 }
             }
 
+            // TODOSJW: Do I need to change this to remove 1 Hz replanning?
             if (!c_ReusePlanEnabled) stats.Plan = DubinsPlan();
 
+            // SJW: this seems good, probably want to keep this. I think this is what "parcels out" the remaining portion of the incumbent plan, which is exactly what I want when using BIT*'s complete plan from start to goal.
             if (!stats.Plan.empty()) stats.Plan.changeIntoSuffix(startState.time()); // update the last plan
 
+            // SJW: I think this is irrelevant to removing 1 Hz replanning for BIT*.
             // shrink turning radius (experimental)
             if (c_RadiusShrinkEnabled) {
                 m_PlannerConfig.setTurningRadius(m_PlannerConfig.turningRadius() - c_RadiusShrinkAmount);
@@ -164,6 +169,7 @@ void Executive::planLoop() {
                 m_RadiusShrink += c_RadiusShrinkAmount;
             }
 
+            // SJW: not yet relevant, since I'm not yet handling dynamic obstacles.
             // check for collision penalty
             double collisionPenalty = 0;
             if (m_UseGaussianDynamicObstacles) {
@@ -195,10 +201,39 @@ void Executive::planLoop() {
                     std::lock_guard<std::mutex> lock(m_RibbonManagerMutex);
                     ribbonManagerCopy = m_RibbonManager;
                 }
+                // 
                 // cover up to the state that we're planning from
                 ribbonManagerCopy.coverBetween(m_LastState.x(), m_LastState.y(), startState.x(), startState.y(), false);
-                stats = planner->plan(ribbonManagerCopy, startState, m_PlannerConfig, stats.Plan,
-                                     startTime + c_PlanningTimeSeconds - m_TrajectoryPublisher->getTime());
+
+
+
+                /***********************************
+                 * HERE IS THE PLANNER.PLAN() CALL *
+                 ***********************************/
+                // When using BIT*, only plan once. Otherwise, retain previous 1 Hz replanning behavior.
+                switch (m_WhichPlanner) {
+                    case WhichPlanner::BitStar:
+                        // If we have a plan, then do not replan.
+                        if (!stats.Plan.empty()) {
+                            cerr << m_TrajectoryPublisher->getTime() << ": Executive.planLoop() BIT* already has a plan, so skipping planning on this cycle." << endl;
+                            break;
+                        }
+                        // If we have no plan, then do indeed plan.
+                    default:
+                        cerr << m_TrajectoryPublisher->getTime() << ": Executive.planLoop() about to call planner.plan()" << endl;
+                        stats = planner->plan(
+                            ribbonManagerCopy,
+                            startState,
+                            m_PlannerConfig,
+                            stats.Plan,
+                            startTime + c_PlanningTimeSeconds - m_TrajectoryPublisher->getTime()
+                        );
+                }
+                
+
+
+
+            // QUESTION: What kind of exception(s) get caught here?
             } catch (const std::exception& e) {
                 cerr << "Exception thrown while planning:" << endl;
                 cerr << e.what() << endl;
@@ -213,6 +248,7 @@ void Executive::planLoop() {
             m_TrajectoryPublisher->publishStats(stats, collisionPenalty * Edge::collisionPenaltyFactor(),
                                                 0, lastPlanAchievable);
 
+            // SJW: It's probably fine to keep working on 1 Hz (or whatever it is), as long as I'm not replanning. So how do I decide whether to replan? Just if MPC complains. Where do I know about that?
             // calculate remaining time (to sleep)
             double endTime = m_TrajectoryPublisher->getTime();
             int sleepTime = ((int) ((c_PlanningTimeSeconds - (endTime - startTime)) * 1000));
