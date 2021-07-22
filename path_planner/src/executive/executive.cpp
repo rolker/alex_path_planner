@@ -10,6 +10,7 @@
 #include "../common/map/GridWorldMap.h"
 #include "../planner/PotentialFieldPlanner.h"
 #include "../planner/BitStarPlanner.h"
+#include <iomanip> // readable log timestamps
 
 using namespace std;
 
@@ -17,6 +18,8 @@ Executive::Executive(TrajectoryPublisher *trajectoryPublisher)
 {
     m_TrajectoryPublisher = trajectoryPublisher;
     m_PlannerConfig.setNowFunction([&] { return m_TrajectoryPublisher->getTime(); });
+    // readable log timestamps instead of scientific notation
+    cerr << fixed << showpoint << setprecision(9);
 }
 
 Executive::~Executive() {
