@@ -1,4 +1,4 @@
-// Wrapper for BIT* planner
+ // Wrapper for BIT* planner
 
 #include "BitStarPlanner.h"
 #include "Planner.h"
@@ -282,15 +282,29 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
         // parse planner output
         // *m_Config.output() << "DEBUG: BitStarPlanner received following raw plan:\n" << endl;
         // *m_Config.output() << raw_plan.str() << "------------" << endl;
+
+        // thither to extract value names (could theoretically perform validation on them, too) and or other ignored fields from BIT* output
+        string SKIP = "";
+        int solution_number;
+        raw_plan >> SKIP;
+        cerr << "DEBUG: solution_number = " << SKIP << endl;
+        SKIP = "";
+        raw_plan >> solution_number;
         int batch_number;
+        raw_plan >> SKIP;
         raw_plan >> batch_number;
         m_Stats.Iterations = batch_number + 1;
         float plan_cost;
+        raw_plan >> SKIP;
         raw_plan >> plan_cost;
+        float plan_duration;
+        raw_plan >> SKIP;
+        raw_plan >> plan_duration;
         m_Stats.PlanFValue = plan_cost;
         int solution_steps_count;
+        raw_plan >> SKIP;
         raw_plan >> solution_steps_count;
-        printf("%f: BitStarPlanner.plan(): solution with cost %f has %d steps found in batch %d\n", m_Config.now(), plan_cost, solution_steps_count, batch_number);
+        printf("%f: BitStarPlanner.plan(): solution %d from batch %d has cost %f and duration %f (s) in %d steps.\n", m_Config.now(), solution_number, batch_number, plan_cost, plan_duration, solution_steps_count);
         double start_time = m_Config.startStateTime();
         // std::cerr << "BitStarPlanner.plan: got initial start_time of " << start_time << " from m_Config.startStateTime()." << std::endl;
         for (int i = 1; i <= solution_steps_count; i++) {
@@ -300,7 +314,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
           // printf("step %d initialized qi[0] to %f\n", i, qi[0]);
           string dubins_word_str;
           // ignore standalone first print out of initial configuration (x, y, theta)
-          string SKIP = "";
+
           raw_plan >> SKIP;
           raw_plan >> SKIP;
           raw_plan >> SKIP;
@@ -349,6 +363,8 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
           //   m_Stats.Plan.totalTime()
           // );
         }
+
+        // NOTE: It appears we do not read the (rest of the) tree from the BIT* output. If we want to in the future, we can.
 
         int status;
         pid_t wpid = waitpid(pid, &status, 0); // wait for child before terminating

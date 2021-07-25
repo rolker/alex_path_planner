@@ -83,7 +83,7 @@ void Executive::planLoop() {
         while (true) {
             double startTime = m_TrajectoryPublisher->getTime();
             // logging time each time through the loop for making sure we're hitting the time bound
-//            *m_PlannerConfig.output() << "Top of plan loop at time " << std::to_string(startTime) << std::endl;
+            cerr << startTime << ": Executive.planLoop() starting " << std::endl;
 
             // planner is stateless so we can make a new instance each time
             unique_ptr<Planner> planner;
