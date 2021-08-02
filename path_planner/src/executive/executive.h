@@ -165,6 +165,9 @@ private:
     BinaryDynamicObstaclesManager::SharedPtr m_BinaryDynamicObstaclesManager = std::make_shared<BinaryDynamicObstaclesManager>();
     GaussianDynamicObstaclesManager::SharedPtr m_GaussianDynamicObstaclesManager = std::make_shared<GaussianDynamicObstaclesManager>();
 
+    // synchronize to Gaussian dynamic obstacles data
+    std::mutex m_GaussianDynamicObstaclesManagerMutex;
+
     // map info (start with no new map)
     std::shared_ptr<Map> m_NewMap = nullptr;
     std::string m_CurrentMapPath = "";

@@ -47,12 +47,6 @@ void Executive::updateCovered(double x, double y, double speed, double heading, 
 void Executive::planLoop() {
     double trialStartTime = m_TrajectoryPublisher->getTime(), cumulativeCollisionPenalty = 0;
 
-    // Forget all dynamic obstacles. In practice this is not a good idea but for testing it's sort of OK
-    // Roland, you probably want to take this out at some point and find a better way to make the planner forget about
-    // old dynamic obstacles (timeout of some kind?)
-    m_BinaryDynamicObstaclesManager = std::make_shared<BinaryDynamicObstaclesManager>();
-    m_GaussianDynamicObstaclesManager = std::make_shared<GaussianDynamicObstaclesManager>();
-
     try {
         cerr << "Initializing planner" << endl;
 
@@ -172,12 +166,13 @@ void Executive::planLoop() {
                 m_RadiusShrink += c_RadiusShrinkAmount;
             }
 
-            // SJW: not yet relevant, since I'm not yet handling dynamic obstacles.
             // check for collision penalty
             double collisionPenalty = 0;
             if (m_UseGaussianDynamicObstacles) {
-                collisionPenalty = m_GaussianDynamicObstaclesManager->DynamicObstaclesManager::collisionExists(
-                        m_LastState, false);
+                {
+                    std::lock_guard<std::mutex> lock(m_GaussianDynamicObstaclesManagerMutex);
+                    collisionPenalty = m_GaussianDynamicObstaclesManager->DynamicObstaclesManager::collisionExists(m_LastState, false);
+                }
             } else {
                 collisionPenalty = m_BinaryDynamicObstaclesManager->DynamicObstaclesManager::collisionExists(
                         m_LastState, false);
@@ -373,8 +368,17 @@ void Executive::updateDynamicObstacle(uint32_t mmsi, State obstacle, double widt
 //    m_DynamicObstaclesManager.update(mmsi, inventDistributions(obstacle));
     m_BinaryDynamicObstaclesManager->update(mmsi, obstacle.x(), obstacle.y(), obstacle.heading(),
             obstacle.speed(), obstacle.time(), width, length);
-    m_GaussianDynamicObstaclesManager->update(mmsi, obstacle.x(), obstacle.y(), obstacle.heading(),
-            obstacle.speed(), obstacle.time());
+    {
+        std::lock_guard<std::mutex> lock(m_GaussianDynamicObstaclesManagerMutex);
+        m_GaussianDynamicObstaclesManager->update(
+            mmsi,
+            obstacle.x(),
+            obstacle.y(),
+            obstacle.heading(),
+            obstacle.speed(),
+            obstacle.time()
+        );
+    }
 }
 
 void Executive::refreshMap(const std::string& pathToMapFile, double latitude, double longitude) {
