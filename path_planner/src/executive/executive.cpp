@@ -214,6 +214,8 @@ void Executive::planLoop() {
                  * HERE IS THE PLANNER.PLAN() CALL *
                  ***********************************/
                 // When using BIT*, only plan once. Otherwise, retain previous 1 Hz replanning behavior.
+                // (Note we only break out of the switch and skip the default option if we're using BIT*
+                // *AND* we already have a plan; in any other case, we call planner.plan().)
                 switch (m_WhichPlanner) {
                     case WhichPlanner::BitStar:
                         // If we have a plan, then do not replan.
