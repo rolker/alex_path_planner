@@ -14,6 +14,10 @@
 
 #include "../common/map/Map.h"
 
+#include "../common/dynamic_obstacles/GaussianDynamicObstaclesManager.h"
+
+#include <iomanip>
+
 using namespace std;
 
 BitStarPlanner::BitStarPlanner() {};
@@ -125,6 +129,7 @@ Planner::Stats BitStarPlanner::plan(
 
     // start build ascii world string for BIT* planner app to consume via stdin
     std::ostringstream world;
+    world << fixed << showpoint << setprecision(9);
     world << mapResolution << endl;
     for (int row = 0; row < num_rows; row++) {
       for (int col = 0; col < num_cols; col++) {
@@ -139,6 +144,13 @@ Planner::Stats BitStarPlanner::plan(
       world << endl;
     }
 
+    // serialize dynamic obstacle information
+    world << "dynamic_obstacles " << dynamic_obstacles_copy.size() << endl;
+    // TODO check that Yaw is in same units as, e.g., --start-theta argument
+    for (std::pair<uint32_t, GaussianDynamicObstaclesManager::Obstacle> entry : dynamic_obstacles_copy) {
+      world << entry.first << " " << entry.second.X << " " << entry.second.Y << " " << entry.second.Yaw << " " << entry.second.Speed << " " << entry.second.Time << endl;
+    }
+
     // start coordinates
     double start_heading = convert_eon_to_noe(start.heading());
 
@@ -148,7 +160,7 @@ Planner::Stats BitStarPlanner::plan(
 
     std::string world_str = world.str();
 
-    // *m_Config.output() << "DEBUG: BitStarPlanner constructed world:\n" << world_str << endl;
+    *m_Config.output() << "DEBUG: BitStarPlanner constructed world:\n" << world_str << endl;
 
     // STUB
     // throw std::runtime_error("TO BE IMPLEMENTED");
