@@ -16,8 +16,14 @@ public:
 
     ~AStarPlanner() override = default;
 
-    Stats plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
-                    const DubinsPlan& previousPlan, double timeRemaining) override;
+    Stats plan(
+        const RibbonManager& ribbonManager,
+        const State& start,
+        PlannerConfig config,
+        const DubinsPlan& previousPlan,
+        double timeRemaining,
+        std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy
+    ) override;
 
 protected:
     int m_IterationCount = 0;

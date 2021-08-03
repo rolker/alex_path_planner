@@ -203,7 +203,13 @@ void Executive::planLoop() {
                 // cover up to the state that we're planning from
                 ribbonManagerCopy.coverBetween(m_LastState.x(), m_LastState.y(), startState.x(), startState.y(), false);
 
+                // get copy of Gaussian dynamic obstacle data to pass to planner (implemented for BitStarPlanner)
+                std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy;
+                {
+                    std::lock_guard<std::mutex> lock(m_GaussianDynamicObstaclesManagerMutex);
+                    dynamic_obstacles_copy = m_GaussianDynamicObstaclesManager->get_deep_copy();
 
+                }
 
                 /***********************************
                  * HERE IS THE PLANNER.PLAN() CALL *
@@ -226,7 +232,8 @@ void Executive::planLoop() {
                             startState,
                             m_PlannerConfig,
                             stats.Plan,
-                            startTime + c_PlanningTimeSeconds - m_TrajectoryPublisher->getTime()
+                            startTime + c_PlanningTimeSeconds - m_TrajectoryPublisher->getTime(),
+                            dynamic_obstacles_copy
                         );
                 }
                 

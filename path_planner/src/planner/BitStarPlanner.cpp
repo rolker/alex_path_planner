@@ -83,8 +83,14 @@ DubinsPathType dubins_path_type(string path_type_str) {
   throw invalid_argument("Unrecognized path_type_str for dubins_path_type().");
 }
 
-Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
-                         const DubinsPlan& previousPlan, double timeRemaining) {
+Planner::Stats BitStarPlanner::plan(
+      const RibbonManager& ribbonManager,
+      const State& start,
+      PlannerConfig config,
+      const DubinsPlan& previousPlan,
+      double timeRemaining,
+      std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy
+  ) {
 
     // *config.output() << "DEBUG: BitStarPlanner::plan() starting" << endl;
     config.output()->flush();
@@ -108,7 +114,7 @@ Planner::Stats BitStarPlanner::plan(const RibbonManager& ribbonManager, const St
     m_Config.output()->flush();
     auto mapExtremes = m_Config.map()->extremes();
     // *m_Config.output() << "DEBUG: BitStarPlanner::plan() just got extremes: " << mapExtremes[0] << "," << mapExtremes[1] << "," << mapExtremes[2] << "," << mapExtremes[3] << "," << endl;
-    config.output()->flush();
+    m_Config.output()->flush();
     auto mapResolution = m_Config.map()->resolution();
     // *m_Config.output() << "DEBUG: BitStarPlanner::plan() just got resolution: " << mapResolution << endl;
     m_Config.output()->flush();

@@ -36,8 +36,14 @@ double Planner::now() const {
     return m_Config.now();
 }
 
-Planner::Stats Planner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
-                         const DubinsPlan& previousPlan, double timeRemaining) {
+Planner::Stats Planner::plan(
+    const RibbonManager& ribbonManager,
+    const State& start,
+    PlannerConfig config,
+    const DubinsPlan& previousPlan,
+    double timeRemaining,
+    std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy
+) {
     m_Config = std::move(config);
     throw std::runtime_error("Ribbon point-to-point planner is not yet implemented");
 }

@@ -8,6 +8,7 @@
 #include "search/Vertex.h"
 #include <path_planner_common/DubinsPlan.h>
 #include "PlannerConfig.h"
+#include "../common/dynamic_obstacles/GaussianDynamicObstaclesManager.h" // Obstacle struct to pass to planner
 
 /**
  * Interface to represent all planners. This might not have been really necessary but when I ported everything to C++
@@ -47,8 +48,14 @@ public:
      * @param timeRemaining computation time bound
      * @return
      */
-    virtual Stats plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
-                            const DubinsPlan& previousPlan, double timeRemaining);
+    virtual Stats plan(
+        const RibbonManager& ribbonManager,
+        const State& start,
+        PlannerConfig config,
+        const DubinsPlan& previousPlan,
+        double timeRemaining,
+        std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy
+    );
 
     /**
      * Construct a single plan by tracing back from the given vertex to the root.

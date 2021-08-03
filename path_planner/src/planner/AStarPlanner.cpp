@@ -9,8 +9,14 @@ std::function<bool(shared_ptr<Vertex> v1, shared_ptr<Vertex> v2)> AStarPlanner::
     };
 }
 
-Planner::Stats AStarPlanner::plan(const RibbonManager& ribbonManager, const State& start, PlannerConfig config,
-                              const DubinsPlan& previousPlan, double timeRemaining) {
+Planner::Stats AStarPlanner::plan(
+    const RibbonManager& ribbonManager,
+    const State& start,
+    PlannerConfig config,
+    const DubinsPlan& previousPlan,
+    double timeRemaining,
+    std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy
+) {
     m_Config = std::move(config); // gotta do this before we can call now()
     double endTime = timeRemaining + now();
     m_Config.setStartStateTime(start.time());
