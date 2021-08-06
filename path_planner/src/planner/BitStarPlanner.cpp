@@ -146,7 +146,6 @@ Planner::Stats BitStarPlanner::plan(
 
     // serialize dynamic obstacle information
     world << "dynamic_obstacles " << dynamic_obstacles_copy.size() << endl;
-    // TODO check that Yaw is in same units as, e.g., --start-theta argument
     for (std::pair<uint32_t, GaussianDynamicObstaclesManager::Obstacle> entry : dynamic_obstacles_copy) {
       world << entry.first << " " << entry.second.X << " " << entry.second.Y << " " << entry.second.Yaw << " " << entry.second.Speed << " " << entry.second.Time << endl;
     }
