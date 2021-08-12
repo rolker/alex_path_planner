@@ -152,6 +152,7 @@ Planner::Stats BitStarPlanner::plan(
 
     // start coordinates
     double start_heading = convert_eon_to_noe(start.heading());
+    double start_time = m_Config.startStateTime();
 
     // goal coordinates
     State goal = selectGoal(start, ribbonManager);
@@ -236,6 +237,8 @@ Planner::Stats BitStarPlanner::plan(
             const char* arg18 = std::to_string(goal_heading).c_str();
             char arg19[] = "--rho";
             const char* arg20 = std::to_string(m_Config.turningRadius()).c_str();
+            char arg21[] = "--start-time";
+            const char* arg22 = std::to_string(start_time).c_str();
 
             // TODO add seed for RNG for reproducibility during development: -e 0
 
@@ -322,7 +325,6 @@ Planner::Stats BitStarPlanner::plan(
         raw_plan >> SKIP;
         raw_plan >> solution_steps_count;
         printf("%f: BitStarPlanner.plan(): solution %d from batch %d has cost %f and duration %f (s) in %d steps.\n", m_Config.now(), solution_number, batch_number, plan_cost, plan_duration, solution_steps_count);
-        double start_time = m_Config.startStateTime();
         // std::cerr << "BitStarPlanner.plan: got initial start_time of " << start_time << " from m_Config.startStateTime()." << std::endl;
         for (int i = 1; i <= solution_steps_count; i++) {
           double qi[3] = {0,0,0};
