@@ -42,6 +42,13 @@ class BitStarPlanner : public Planner {
          * @param config
          */
         void setConfig(PlannerConfig config);
+    private:
+        float dynamic_obstacle_cost_factor = 100000.0;
+        float dynamic_obstacle_time_stdev_power = 1.0;
+        float dynamic_obstacle_time_stdev_factor = 1.0;
+        int number_of_solutions = 2;
+        // seconds
+        float time_limit = 10.0;
 };
 
 

@@ -216,13 +216,12 @@ Planner::Stats BitStarPlanner::plan(
               throw std::runtime_error("cannot find built executable");
             }
             // TODO should I close that ifstream since I don't use it?
-            char arg1[] = "-v";
+            char arg1[] = "--vehicle";
             char arg2[] = "dubins";
-            char arg3[] = "-u";
-            char arg4[] = "1";
-            char arg5[] = "-t";
-            // hard-coded time limit
-            char arg6[] = "10.0";
+            char arg3[] = "--number-of-solutions";
+            const char* arg4 = std::to_string(number_of_solutions).c_str();
+            char arg5[] = "--time-limit";
+            const char* arg6 = std::to_string(number_of_solutions).c_str();
             char arg7[] = "--start-x";
             const char* arg8 = std::to_string(start.x()).c_str();
             char arg9[] = "--start-y";
@@ -239,12 +238,16 @@ Planner::Stats BitStarPlanner::plan(
             const char* arg20 = std::to_string(m_Config.turningRadius()).c_str();
             char arg21[] = "--start-time";
             const char* arg22 = std::to_string(start_time).c_str();
-
-            // TODO add seed for RNG for reproducibility during development: -e 0
+            char arg23[] = "--dynamic-obstacle-cost-factor";
+            const char* arg24 = std::to_string(dynamic_obstacle_cost_factor).c_str();
+            char arg25[] = "--dynamic-obstacle-time-stdev-power";
+            const char* arg26 = std::to_string(dynamic_obstacle_time_stdev_power).c_str();
+            char arg27[] = "--dynamic-obstacle-time-stdev-factor";
+            const char* arg28 = std::to_string(dynamic_obstacle_time_stdev_factor).c_str();
 
             // *m_Config.output() << "DEBUG: BitStarPlanner CHILD will make this system call: " << arg0 << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << " " << arg5 << " " << arg6 << " " << arg7 << " " << arg8 << " " << arg9 << " " << arg10 << " " << arg11 << " " << arg12 << " " << arg13 << " " << arg14 << " " << arg15 << " " << arg16 << " " << arg17 << " " << arg18 << " " << arg19 << " " << arg20 << endl;
 
-            execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, NULL);
+            execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, NULL);
         }
 
     } else {
@@ -304,25 +307,31 @@ Planner::Stats BitStarPlanner::plan(
         // *m_Config.output() << raw_plan.str() << "------------" << endl;
 
         // thither to extract value names (could theoretically perform validation on them, too) and or other ignored fields from BIT* output
-        string SKIP = "";
+        chunk = "";
         int solution_number;
-        raw_plan >> SKIP;
-        cerr << "DEBUG: solution_number = " << SKIP << endl;
-        SKIP = "";
-        raw_plan >> solution_number;
+        while (true) {
+          raw_plan >> chunk;
+          if (chunk.compare(std::string("solution")) == 0) {
+            raw_plan >> solution_number;
+            cerr << "DEBUG: found solution_number = " << solution_number << endl;
+            if (solution_number == number_of_solutions) {
+              break;
+            }
+          }
+        }
         int batch_number;
-        raw_plan >> SKIP;
+        raw_plan >> chunk;
         raw_plan >> batch_number;
         m_Stats.Iterations = batch_number + 1;
         float plan_cost;
-        raw_plan >> SKIP;
+        raw_plan >> chunk;
         raw_plan >> plan_cost;
         float plan_duration;
-        raw_plan >> SKIP;
+        raw_plan >> chunk;
         raw_plan >> plan_duration;
         m_Stats.PlanFValue = plan_cost;
         int solution_steps_count;
-        raw_plan >> SKIP;
+        raw_plan >> chunk;
         raw_plan >> solution_steps_count;
         printf("%f: BitStarPlanner.plan(): solution %d from batch %d has cost %f and duration %f (s) in %d steps.\n", m_Config.now(), solution_number, batch_number, plan_cost, plan_duration, solution_steps_count);
         // std::cerr << "BitStarPlanner.plan: got initial start_time of " << start_time << " from m_Config.startStateTime()." << std::endl;
@@ -334,10 +343,10 @@ Planner::Stats BitStarPlanner::plan(
           string dubins_word_str;
           // ignore standalone first print out of initial configuration (x, y, theta)
 
-          raw_plan >> SKIP;
-          raw_plan >> SKIP;
-          raw_plan >> SKIP;
-          SKIP = "";
+          raw_plan >> chunk;
+          raw_plan >> chunk;
+          raw_plan >> chunk;
+          chunk = "";
           // get initial configuration from 
           raw_plan >> qi[0];
           // printf("step %d updated qi[0] to %f\n", i, qi[0]);
