@@ -96,6 +96,8 @@ Planner::Stats BitStarPlanner::plan(
       std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy
   ) {
 
+    cerr << "DEBUG: BitStarPlanner.plan(): dynamic_obstacles_copy.size(): " << dynamic_obstacles_copy.size() << endl;
+
     // *config.output() << "DEBUG: BitStarPlanner::plan() starting" << endl;
     config.output()->flush();
     // copied from Planner.cpp

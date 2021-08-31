@@ -68,6 +68,8 @@ public:
 
     const std::unordered_map<uint32_t, Obstacle> get_deep_copy() const;
 
+    int size() const;
+
 private:
     std::unordered_map<uint32_t, Obstacle> m_Obstacles;
 };
