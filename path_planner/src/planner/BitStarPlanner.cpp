@@ -152,6 +152,7 @@ Planner::Stats BitStarPlanner::plan(
 
     // start coordinates
     double start_heading = convert_eon_to_noe(start.heading());
+    double start_time = m_Config.startStateTime();
 
     // goal coordinates
     State goal = selectGoal(start, ribbonManager);
@@ -236,6 +237,8 @@ Planner::Stats BitStarPlanner::plan(
             const char* arg18 = std::to_string(goal_heading).c_str();
             char arg19[] = "--rho";
             const char* arg20 = std::to_string(m_Config.turningRadius()).c_str();
+            char arg21[] = "--start-time";
+            const char* arg22 = std::to_string(start_time).c_str();
 
             // TODO add seed for RNG for reproducibility during development: -e 0
 
