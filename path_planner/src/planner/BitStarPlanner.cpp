@@ -84,7 +84,7 @@ DubinsPathType dubins_path_type(string path_type_str) {
     // cerr << "dubins_path_type: detected LRL" << endl;
     return DubinsPathType::LRL;
     }
-  throw invalid_argument("Unrecognized path_type_str for dubins_path_type().");
+  throw invalid_argument("Unrecognized path_type_str for dubins_path_type(): " + path_type_str);
 }
 
 Planner::Stats BitStarPlanner::plan(
@@ -274,7 +274,7 @@ Planner::Stats BitStarPlanner::plan(
         // *m_Config.output() << "DEBUG: BitStarPlanner about to get plan chunks: " << endl;
         while (std::getline(*reader, chunk)) {
           // STUB
-          // *m_Config.output() << "DEBUG: BitStarPlanner got plan chunk: " << chunk << endl;
+          *m_Config.output() << "DEBUG: BitStarPlanner got plan chunk: " << chunk << endl;
           raw_plan << chunk << endl;
         }
         // *m_Config.output() << "DEBUG: BitStarPlanner thinks it got all the plan chunks: " << endl;
@@ -304,27 +304,43 @@ Planner::Stats BitStarPlanner::plan(
         string SKIP = "";
         int solution_number;
         raw_plan >> SKIP;
-        cerr << "DEBUG: solution_number = " << SKIP << endl;
+        cerr << "DEBUG: got \"" << SKIP << "\"" << endl;
         SKIP = "";
         raw_plan >> solution_number;
+        cerr << "DEBUG: solution_number = " << solution_number << endl;
+        SKIP = "";
         int batch_number;
         raw_plan >> SKIP;
+        cerr << "DEBUG: got \"" << SKIP << "\"" << endl;
+        SKIP = "";
         raw_plan >> batch_number;
+        cerr << "DEBUG: batch_number = " << batch_number << endl;
         m_Stats.Iterations = batch_number + 1;
         float plan_cost;
         raw_plan >> SKIP;
+        cerr << "DEBUG: got \"" << SKIP << "\"" << endl;
+        SKIP = "";
         raw_plan >> plan_cost;
+        cerr << "DEBUG: plan_cost = " << plan_cost << endl;
         float plan_duration;
         raw_plan >> SKIP;
+        cerr << "DEBUG: got \"" << SKIP << "\"" << endl;
+        SKIP = "";
         raw_plan >> plan_duration;
+        cerr << "DEBUG: plan_duration = " << plan_duration << endl;
         m_Stats.PlanFValue = plan_cost;
         int solution_steps_count;
         raw_plan >> SKIP;
+        cerr << "DEBUG: got \"" << SKIP << "\"" << endl;
+        SKIP = "";
         raw_plan >> solution_steps_count;
-        printf("%f: BitStarPlanner.plan(): solution %d from batch %d has cost %f and duration %f (s) in %d steps.\n", m_Config.now(), solution_number, batch_number, plan_cost, plan_duration, solution_steps_count);
+        cerr << "DEBUG: solution_steps_count = " << solution_steps_count << endl;
+        cerr << m_Config.now() << ": BitStarPlanner.plan(): solution " << solution_number << " from batch " << batch_number << " has cost " << plan_cost << " and duration " << plan_duration << 
+        " (s) in " << solution_steps_count << " steps.\n";
         double start_time = m_Config.startStateTime();
         // std::cerr << "BitStarPlanner.plan: got initial start_time of " << start_time << " from m_Config.startStateTime()." << std::endl;
         for (int i = 1; i <= solution_steps_count; i++) {
+          cerr << "DEBUG: parsing solution step " << i << endl;
           double qi[3] = {0,0,0};
           double param[3] = {0,0,0};
           double rho = 0;
@@ -333,22 +349,39 @@ Planner::Stats BitStarPlanner::plan(
           // ignore standalone first print out of initial configuration (x, y, theta)
 
           raw_plan >> SKIP;
+          cerr << "DEBUG: got \"" << SKIP << "\"" << endl;
+          SKIP = "";
           raw_plan >> SKIP;
+          cerr << "DEBUG: got \"" << SKIP << "\"" << endl;
+          SKIP = "";
           raw_plan >> SKIP;
+          cerr << "DEBUG: got \"" << SKIP << "\"" << endl;
+          SKIP = "";
           SKIP = "";
           // get initial configuration from 
           raw_plan >> qi[0];
+          cerr << "DEBUG: set qi[0] to " << qi[0] << endl;
           // printf("step %d updated qi[0] to %f\n", i, qi[0]);
           raw_plan >> qi[1];
+          cerr << "DEBUG: set qi[1] to " << qi[1] << endl;
           raw_plan >> qi[2];
+          cerr << "DEBUG: set qi[2] to " << qi[2] << endl;
           // get normalized segment lengths
           raw_plan >> param[0];
+          cerr << "DEBUG: set param[0] to " << param[0] << endl;
           raw_plan >> param[1];
+          cerr << "DEBUG: set param[1] to " << param[1] << endl;
           raw_plan >> param[2];
+          cerr << "DEBUG: set param[2] to " << param[2] << endl;
           // get radius/scaling factor
           raw_plan >> rho;
+          cerr << "DEBUG: set rho to " << rho << endl;
           // get Dubins word (path type, e.g., "LSL," etc.)
           raw_plan >> dubins_word_str;
+          cerr << "DEBUG: set dubins_word_str to " << dubins_word_str << endl;
+          // not currently used in Executive or BitStarPlanner wrapper
+          double _g_cost;
+          raw_plan >> _g_cost;
           // convert to proper DubinsPath struct type
           DubinsPath dubins_path = {
             {qi[0], qi[1], qi[2]},
