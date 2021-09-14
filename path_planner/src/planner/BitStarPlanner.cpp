@@ -96,7 +96,7 @@ Planner::Stats BitStarPlanner::plan(
       std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy
   ) {
 
-    // *config.output() << "DEBUG: BitStarPlanner::plan() starting" << endl;
+    *config.output() << "DEBUG: BitStarPlanner::plan() starting" << endl;
     config.output()->flush();
     // copied from Planner.cpp
     m_Config = std::move(config);
@@ -153,7 +153,7 @@ Planner::Stats BitStarPlanner::plan(
     // start coordinates
     double start_heading = convert_eon_to_noe(start.heading());
     double start_time = m_Config.startStateTime();
-
+    // cerr << "DEBUG: BitStarPlanner::plan got start_time = " << start_time << endl;
     // goal coordinates
     State goal = selectGoal(start, ribbonManager);
     double goal_heading = convert_eon_to_noe(goal.heading());
@@ -238,13 +238,14 @@ Planner::Stats BitStarPlanner::plan(
             char arg19[] = "--rho";
             const char* arg20 = std::to_string(m_Config.turningRadius()).c_str();
             char arg21[] = "--start-time";
-            const char* arg22 = std::to_string(start_time).c_str();
-
+            // for some reason the string conversion and c_str conversion must be on separate lines for a double with as many significant digits as start_time (10 to the left, 9 to the right)
+            string start_time_string = std::to_string(start_time);
+            const char* arg22 = start_time_string.c_str();
             // TODO add seed for RNG for reproducibility during development: -e 0
 
-            // *m_Config.output() << "DEBUG: BitStarPlanner CHILD will make this system call: " << arg0 << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << " " << arg5 << " " << arg6 << " " << arg7 << " " << arg8 << " " << arg9 << " " << arg10 << " " << arg11 << " " << arg12 << " " << arg13 << " " << arg14 << " " << arg15 << " " << arg16 << " " << arg17 << " " << arg18 << " " << arg19 << " " << arg20 << endl;
+            *m_Config.output() << "DEBUG: BitStarPlanner CHILD will make this system call: " << arg0 << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << " " << arg5 << " " << arg6 << " " << arg7 << " " << arg8 << " " << arg9 << " " << arg10 << " " << arg11 << " " << arg12 << " " << arg13 << " " << arg14 << " " << arg15 << " " << arg16 << " " << arg17 << " " << arg18 << " " << arg19 << " " << arg20 << " " << arg21 << " " << arg22 << endl;
 
-            execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, NULL);
+            execl(arg0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, NULL);
         }
 
     } else {
