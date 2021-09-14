@@ -236,7 +236,10 @@ Planner::Stats BitStarPlanner::plan(
             char arg17[] = "--goal-theta";
             const char* arg18 = std::to_string(goal_heading).c_str();
             char arg19[] = "--rho";
-            const char* arg20 = std::to_string(m_Config.turningRadius()).c_str();
+            double rho = m_Config.turningRadius();
+            string rho_string = std::to_string(rho);
+            const char* arg20 = rho_string.c_str();
+            cerr << "DEBUG: rho: " << rho << ", rho_string: " << rho_string << ", arg20: " << arg20 << endl;
             char arg21[] = "--start-time";
             // for some reason the string conversion and c_str conversion must be on separate lines for a double with as many significant digits as start_time (10 to the left, 9 to the right)
             string start_time_string = std::to_string(start_time);
