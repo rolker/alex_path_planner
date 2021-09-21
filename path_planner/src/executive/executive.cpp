@@ -155,6 +155,7 @@ void Executive::planLoop() {
             if (!c_ReusePlanEnabled) stats.Plan = DubinsPlan();
 
             // SJW: this seems good, probably want to keep this. I think this is what "parcels out" the remaining portion of the incumbent plan, which is exactly what I want when using BIT*'s complete plan from start to goal.
+            // SJW: Well, this doesn't do the parceling, but it does remove the part of the plan that is in the past.
             if (!stats.Plan.empty()) stats.Plan.changeIntoSuffix(startState.time()); // update the last plan
 
             // SJW: I think this is irrelevant to removing 1 Hz replanning for BIT*.
@@ -232,7 +233,7 @@ void Executive::planLoop() {
                             startState,
                             m_PlannerConfig,
                             stats.Plan,
-                            startTime + c_PlanningTimeSeconds - m_TrajectoryPublisher->getTime(),
+                            c_PlanningTimeSeconds - (m_TrajectoryPublisher->getTime() - startTime),
                             dynamic_obstacles_copy
                         );
                 }
