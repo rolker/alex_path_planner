@@ -323,7 +323,7 @@ void Executive::planLoop() {
                     lastPlanAchievable = true;
                 }
             } else {
-                cerr << "Planner returned empty trajectory." << endl;
+                cerr << m_TrajectoryPublisher->getTime() << ": Planner returned empty trajectory." << endl;
                 startState = State();
                 failureCount++;
                 if (failureCount > 2) {
