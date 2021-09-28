@@ -217,8 +217,9 @@ void Executive::planLoop() {
                 std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy;
                 {
                     std::lock_guard<std::mutex> lock(m_GaussianDynamicObstaclesManagerMutex);
+                    cerr << "DEBUG: Executive.planLoop(): m_GaussianDynamicObstaclesManager.size(): " << m_GaussianDynamicObstaclesManager->size() << endl;
                     dynamic_obstacles_copy = m_GaussianDynamicObstaclesManager->get_deep_copy();
-
+                    cerr << "DEBUG: Executive.planLoop(): m_GaussianDynamicObstaclesManager.get_deep_copy().size(): " << dynamic_obstacles_copy.size() << endl;
                 }
 
                 /***********************************
@@ -386,11 +387,14 @@ void Executive::terminate()
 }
 
 void Executive::updateDynamicObstacle(uint32_t mmsi, State obstacle, double width, double length) {
+    cerr << "DEBUG: Executive.updateDynamicObstacle() called" << endl;
 //    m_DynamicObstaclesManager.update(mmsi, inventDistributions(obstacle));
     m_BinaryDynamicObstaclesManager->update(mmsi, obstacle.x(), obstacle.y(), obstacle.heading(),
             obstacle.speed(), obstacle.time(), width, length);
     {
         std::lock_guard<std::mutex> lock(m_GaussianDynamicObstaclesManagerMutex);
+        cerr << "DEBUG: Executive.updateDynamicObstacle() has acquired m_GaussianDynamicObstaclesManagerMutex" << endl;
+        cerr << "DEBUG: Executive.updateDynamicObstacle(): PRIOR to update, m_GaussianDynamicObstaclesManager.size(): " << m_GaussianDynamicObstaclesManager->size() << endl;
         m_GaussianDynamicObstaclesManager->update(
             mmsi,
             obstacle.x(),
@@ -399,6 +403,7 @@ void Executive::updateDynamicObstacle(uint32_t mmsi, State obstacle, double widt
             obstacle.speed(),
             obstacle.time()
         );
+        cerr << "DEBUG: Executive.updateDynamicObstacle(): AFTER update, m_GaussianDynamicObstaclesManager.size(): " << m_GaussianDynamicObstaclesManager->size() << endl;
     }
 }
 

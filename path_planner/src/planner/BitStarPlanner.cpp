@@ -98,6 +98,7 @@ Planner::Stats BitStarPlanner::plan(
     m_Config = std::move(config);
     double BitStarPlanner_plan_start_time = m_Config.now();
     *config.output() << m_Config.now() << ": DEBUG: BitStarPlanner::plan() starting" << endl;
+    // cerr << "DEBUG: BitStarPlanner.plan(): dynamic_obstacles_copy.size(): " << dynamic_obstacles_copy.size() << endl;
     config.output()->flush();
     // copied from Planner.cpp
 
