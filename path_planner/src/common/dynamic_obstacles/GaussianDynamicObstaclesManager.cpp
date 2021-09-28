@@ -15,7 +15,7 @@ double GaussianDynamicObstaclesManager::collisionExists(double x, double y, doub
 void GaussianDynamicObstaclesManager::update(uint32_t mmsi, double x, double y, double heading, double speed,
                                              double time) {
     if (!isIgnored(mmsi)) {
-        std::cerr << "DEBUG: GaussianDynamicObstaclesManager.update() called with non-ignored mmsi; INITIAL size is " << m_Obstacles.size() << std::endl;
+        // std::cerr << "DEBUG: GaussianDynamicObstaclesManager.update() called with non-ignored mmsi; INITIAL size is " << m_Obstacles.size() << std::endl;
         // I guess the piecewise_construct / forward_as_tuple idiom here helps distinguish between key and value components of the map entry
         auto result = m_Obstacles.emplace(std::piecewise_construct,
                 std::forward_as_tuple(mmsi),
@@ -23,7 +23,7 @@ void GaussianDynamicObstaclesManager::update(uint32_t mmsi, double x, double y, 
         if (!result.second) {
             result.first->second = Obstacle(x, y, heading, speed, time);
         }
-        std::cerr << "DEBUG: GaussianDynamicObstaclesManager.update(): FINAL size is " << m_Obstacles.size() << std::endl;
+        // std::cerr << "DEBUG: GaussianDynamicObstaclesManager.update(): FINAL size is " << m_Obstacles.size() << std::endl;
     }
 }
 

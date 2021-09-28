@@ -393,8 +393,8 @@ void Executive::updateDynamicObstacle(uint32_t mmsi, State obstacle, double widt
             obstacle.speed(), obstacle.time(), width, length);
     {
         std::lock_guard<std::mutex> lock(m_GaussianDynamicObstaclesManagerMutex);
-        cerr << "DEBUG: Executive.updateDynamicObstacle() has acquired m_GaussianDynamicObstaclesManagerMutex" << endl;
-        cerr << "DEBUG: Executive.updateDynamicObstacle(): PRIOR to update, m_GaussianDynamicObstaclesManager.size(): " << m_GaussianDynamicObstaclesManager->size() << endl;
+        // cerr << "DEBUG: Executive.updateDynamicObstacle() has acquired m_GaussianDynamicObstaclesManagerMutex" << endl;
+        // cerr << "DEBUG: Executive.updateDynamicObstacle(): PRIOR to update, m_GaussianDynamicObstaclesManager.size(): " << m_GaussianDynamicObstaclesManager->size() << endl;
         m_GaussianDynamicObstaclesManager->update(
             mmsi,
             obstacle.x(),
@@ -403,7 +403,7 @@ void Executive::updateDynamicObstacle(uint32_t mmsi, State obstacle, double widt
             obstacle.speed(),
             obstacle.time()
         );
-        cerr << "DEBUG: Executive.updateDynamicObstacle(): AFTER update, m_GaussianDynamicObstaclesManager.size(): " << m_GaussianDynamicObstaclesManager->size() << endl;
+        // cerr << "DEBUG: Executive.updateDynamicObstacle(): AFTER update, m_GaussianDynamicObstaclesManager.size(): " << m_GaussianDynamicObstaclesManager->size() << endl;
     }
 }
 

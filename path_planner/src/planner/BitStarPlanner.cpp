@@ -293,7 +293,7 @@ Planner::Stats BitStarPlanner::plan(
         string chunk;
         stringstream raw_plan;
         // WORKS: exits loop after message received
-        // *m_Config.output() << m_Config.now() << ": DEBUG: BitStarPlanner::plan about to get raw plan chunks." << endl;
+        *m_Config.output() << m_Config.now() << ": DEBUG: BitStarPlanner::plan about to get raw plan chunks." << endl;
         m_Config.output()->flush();
         while (std::getline(*reader, chunk)) {
           // *m_Config.output() << m_Config.now() << ": DEBUG: BitStarPlanner::plan parent received plan chunk: " << chunk << endl;
@@ -352,6 +352,7 @@ Planner::Stats BitStarPlanner::plan(
 
         // parse raw_plan(s), keeping only the last solution
         while (!raw_plan.eof()) {
+          cerr << "+++++++++++" << endl << m_Config.now() << ": DEBUG: starting to parse a plan from the output captured from the planner" << endl;
           // Initialize planner instance's m_Stats member,
           // a field of which will store the plan we're about
           // to parse from BIT*
@@ -373,32 +374,34 @@ Planner::Stats BitStarPlanner::plan(
           chunk = "";
           int solution_number;
           raw_plan >> chunk;
+          cerr << m_Config.now() << ": DEBUG: got \"" << chunk << "\"" << endl;
           raw_plan >> solution_number;
-          cerr<< m_Config.now() << ": DEBUG: solution_number = " << solution_number << endl;
+          cerr << m_Config.now() << ": DEBUG: solution_number = " << solution_number << endl;
           int batch_number;
           raw_plan >> chunk;
+          cerr << m_Config.now() << ": DEBUG: got \"" << chunk << "\"" << endl;
           raw_plan >> batch_number;
-          cerr<< m_Config.now() << ": DEBUG: batch_number = " << batch_number << endl;
+          cerr << m_Config.now() << ": DEBUG: batch_number = " << batch_number << endl;
           m_Stats.Iterations = batch_number + 1;
           float plan_cost;
           raw_plan >> chunk;
-          cerr<< m_Config.now() << ": DEBUG: got \"" << chunk << "\"" << endl;
+          cerr << m_Config.now() << ": DEBUG: got \"" << chunk << "\"" << endl;
           chunk = "";
           raw_plan >> plan_cost;
-          cerr<< m_Config.now() << ": DEBUG: plan_cost = " << plan_cost << endl;
+          cerr << m_Config.now() << ": DEBUG: plan_cost = " << plan_cost << endl;
           float plan_duration;
           raw_plan >> chunk;
-          cerr<< m_Config.now() << ": DEBUG: got \"" << chunk << "\"" << endl;
+          cerr << m_Config.now() << ": DEBUG: got \"" << chunk << "\"" << endl;
           chunk = "";
           raw_plan >> plan_duration;
-          cerr<< m_Config.now() << ": DEBUG: plan_duration = " << plan_duration << endl;
+          cerr << m_Config.now() << ": DEBUG: plan_duration = " << plan_duration << endl;
           m_Stats.PlanFValue = plan_cost;
           int solution_steps_count;
           raw_plan >> chunk;
-          cerr<< m_Config.now() << ": DEBUG: got \"" << chunk << "\"" << endl;
+          cerr << m_Config.now() << ": DEBUG: got \"" << chunk << "\"" << endl;
           chunk = "";
           raw_plan >> solution_steps_count;
-          cerr<< m_Config.now() << ": DEBUG: solution_steps_count = " << solution_steps_count << endl;
+          cerr << m_Config.now() << ": DEBUG: solution_steps_count = " << solution_steps_count << endl;
           cerr << m_Config.now() << ": BitStarPlanner.plan(): solution " << solution_number << " from batch " << batch_number << " has cost " << plan_cost << " and duration " << plan_duration << 
           " (s) in " << solution_steps_count << " steps.\n";
           cerr.flush();
@@ -478,16 +481,37 @@ Planner::Stats BitStarPlanner::plan(
             //   m_Stats.Plan.totalTime()
             // );
           }
+
+          // parse (and ignore) tree
           chunk = "";
           raw_plan >> chunk;
-          cerr << m_Config.now() << ": DEBUG: got " << chunk << endl;
+          cerr << m_Config.now() << ": DEBUG: got \"" << chunk << "\"" << endl;
           int tree_size;
           raw_plan >> tree_size;
-          cerr << m_Config.now() << ": DEBUG: got tree_size " << tree_size << endl;
-          int a, b, c, d, e, f, g, h, i, j, k, l;
+          cerr << m_Config.now() << ": DEBUG: got tree_size " << tree_size << "; skipping" << endl;
+          string a, b, c, d, e, f, g, h, i, j, k, l;
           for (int tree_elt = 1; tree_elt <= tree_size; tree_elt++) {
-            cerr << m_Config.now() << ": DEBUG: skipping tree element " << tree_elt << endl;
-            raw_plan >> a >> b >> c >> d >> e >> f >> g >> h >> i >> j >> k >> l;
+            // cerr << m_Config.now() << ": DEBUG: skipping tree element " << tree_elt << endl;
+            raw_plan >> a;
+            raw_plan >> b;
+            raw_plan >> c;
+            raw_plan >> d;
+            raw_plan >> e;
+            raw_plan >> f;
+            raw_plan >> g;
+            raw_plan >> h;
+            raw_plan >> i;
+            raw_plan >> j;
+            raw_plan >> k;
+            raw_plan >> l;
+            cerr << tree_elt << ": " << a << " " << b << " " << c << " " << d << " " << e << " " << f << " " << g << " " << h << " " << i << " " << j << " " << k << " " << l << endl;
+          }
+          cerr << m_Config.now() << ": DEBUG: after parsing solution number " << solution_number << ", the last term of the last tree element was \"" << l << "\"" << endl;
+          // cerr << raw_plan.str() << endl << "===========" << endl;
+          // NOTE: I do *NOT* need to parse (skip) blank line that appears after last tree element in actual planner output, because that
+          // blank line is absent from the copy that is created in the raw_plan stringstream.
+          if (raw_plan.eof()) {
+            break;
           }
         }
           
