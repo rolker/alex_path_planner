@@ -253,8 +253,8 @@ public:
         m_display_pub.publish(geoVizItem);
     }
 
-    State publishPlan(const DubinsPlan& plan) override {
-        return NodeBase::publishPlan(plan);
+    State publishPlan(const DubinsPlan& plan, double planning_time_ideal) override {
+        return NodeBase::publishPlan(plan, planning_time_ideal);
     }
 
     void displayDynamicObstacle(double x, double y, double yaw, double width, double length, uint32_t id) override {
