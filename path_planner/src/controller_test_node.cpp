@@ -74,7 +74,9 @@ public:
         m_TrajectoryDisplayer.displayTrajectory(plan.getHalfSecondSamples(), true);
 //        publishTrajectory(m_Trajectory);
 
-        publishPlan(plan);
+        // not sure what's needed for this test; just doing here what I do for RBPC in Executive
+        double planning_time_ideal = 1.0;
+        publishPlan(plan, planning_time_ideal);
 
         auto t = async(std::launch::async, [&]{
 //            cerr << "Starting display loop at time " << t << endl;

@@ -77,19 +77,28 @@ void Executive::planLoop() {
         while (true) {
             double startTime = m_TrajectoryPublisher->getTime();
             // logging time each time through the loop for making sure we're hitting the time bound
-            cerr << startTime << ": Executive.planLoop() starting " << std::endl;
+            // cerr << startTime << ": Executive.planLoop() starting " << std::endl;
 
             // planner is stateless so we can make a new instance each time
             unique_ptr<Planner> planner;
+            // planner needs to know planning_time_actual (see AFB's comment on c_PlanningTimeSeconds); controller needs to know planning_time_ideal
+            double planning_time_ideal;
+            double planning_time_actual;
             switch (m_WhichPlanner) {
                 case WhichPlanner::PotentialField:
                     planner = std::unique_ptr<Planner>(new PotentialFieldPlanner);
+                    planning_time_ideal = 1.0;
+                    planning_time_actual = c_PlanningTimeSeconds;
                     break;
                 case WhichPlanner::AStar:
                     planner = std::unique_ptr<Planner>(new AStarPlanner);
+                    planning_time_ideal = 1.0;
+                    planning_time_actual = c_PlanningTimeSeconds;
                     break;
                 case WhichPlanner::BitStar:
                     planner = std::unique_ptr<Planner>(new BitStarPlanner);
+                    planning_time_ideal = 3.0;
+                    planning_time_actual = planning_time_ideal - (1 - c_PlanningTimeSeconds);
                     break;
                 default:
                     throw invalid_argument("Unrecognized case for m_WhichPlanner.");
@@ -227,13 +236,14 @@ void Executive::planLoop() {
                         }
                         // If we have no plan, then do indeed plan.
                     default:
-                        cerr << m_TrajectoryPublisher->getTime() << ": Executive.planLoop() about to call planner.plan()" << endl;
+                        double planning_time_actual_remaining = planning_time_actual - (m_TrajectoryPublisher->getTime() - startTime);
+                        cerr << m_TrajectoryPublisher->getTime() << ": Executive.planLoop() about to call planner.plan() with planning_time_actual_remaining " << planning_time_actual_remaining << endl;
                         stats = planner->plan(
                             ribbonManagerCopy,
                             startState,
                             m_PlannerConfig,
                             stats.Plan,
-                            c_PlanningTimeSeconds - (m_TrajectoryPublisher->getTime() - startTime),
+                            planning_time_actual_remaining,
                             dynamic_obstacles_copy
                         );
                 }
@@ -245,6 +255,9 @@ void Executive::planLoop() {
             } catch (const std::exception& e) {
                 cerr << "Exception thrown while planning:" << endl;
                 cerr << e.what() << endl;
+                // DEBUG: temporarily throwing exception to try to provoke core dump
+                // raise (SIGABRT);
+                // throw;
                 cerr << "Ignoring that and just trying to proceed." << endl;
                 stats.Plan = DubinsPlan();
             } catch (...) {
@@ -280,7 +293,7 @@ void Executive::planLoop() {
                 // send trajectory to controller
                 try {
                     // cerr << "DEBUG: about to attempt to publish plan to controller" << endl;
-                    startState = m_TrajectoryPublisher->publishPlan(stats.Plan);
+                    startState = m_TrajectoryPublisher->publishPlan(stats.Plan, planning_time_ideal);
                     // cerr << "DEBUG: after attempting to publish plan, received new startState with time " << startState.time() << endl;
                 } catch (const std::exception& e) {
                     cerr << "Exception thrown while updating controller's reference trajectory:" << endl;

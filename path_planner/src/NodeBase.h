@@ -233,11 +233,12 @@ public:
      * @param plan
      * @return
      */
-    State publishPlan(const DubinsPlan& plan) {
+    State publishPlan(const DubinsPlan& plan, double planning_time_ideal) {
         // std::cerr << "NodeBase.publishPlan called with plan: " << plan.getStartTime() << " to " << plan.getEndTime() << std::endl;
         path_planner_common::UpdateReferenceTrajectoryRequest req;
         path_planner_common::UpdateReferenceTrajectoryResponse res;
         req.plan = convertToPlanMsg(plan);
+        req.planning_time = planning_time_ideal;
         if (m_update_reference_trajectory_client.call(req, res)) {
             auto s = m_TrajectoryDisplayer.convertToStateFromMsg(res.state);
             displayPlannerStart(s);
