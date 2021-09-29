@@ -306,8 +306,8 @@ Planner::Stats BitStarPlanner::plan(
         *m_Config.output() << m_Config.now() << ": DEBUG: BitStarPlanner parent thinks it got all the plan chunks." << endl;
         m_Config.output()->flush();
 
-        *m_Config.output()<< m_Config.now()  << ": DEBUG: BitStarPlanner received following raw plan(s):\n" << endl;
-        *m_Config.output() << raw_plan.str() << "------------" << endl;
+        // *m_Config.output()<< m_Config.now()  << ": DEBUG: BitStarPlanner received following raw plan(s):\n" << endl;
+        // *m_Config.output() << raw_plan.str() << "------------" << endl;
 
 
         // // Initialize planner instance's m_Stats member,
@@ -353,10 +353,21 @@ Planner::Stats BitStarPlanner::plan(
         // parse raw_plan(s), keeping only the last solution
         while (!raw_plan.eof()) {
           cerr << "+++++++++++" << endl << m_Config.now() << ": DEBUG: starting to parse a plan from the output captured from the planner" << endl;
+          // parse planner output
+          chunk = "";
+          int solution_number;
+          raw_plan >> chunk;
+          cerr << m_Config.now() << ": DEBUG: got \"" << chunk << "\"" << endl;
+          // seems like the oef() is not catching to terminate the while-loop, so checking here
+          // (need to do this check before messing with m_Stats, since we don't want to overwrite previous while-loop iteration's work)
+          if (chunk.compare("") == 0) {
+            cerr << m_Config.now() << ": DEBUG: \"solution\" keyword missing; no more plans to parse" << endl;
+            break;
+          }
+
           // Initialize planner instance's m_Stats member,
           // a field of which will store the plan we're about
           // to parse from BIT*
-
           m_Stats = Stats();
 
           m_Stats.Samples = 0; // not currently reported by BIT*
@@ -369,12 +380,6 @@ Planner::Stats BitStarPlanner::plan(
           m_Stats.PlanHValue = 0; // correct for BIT*, which returns complete plan
           m_Stats.PlanDepth = 0; // "Isn't really used anymore, as it was just for the UCS planner" -- Alex
           m_Stats.Plan = DubinsPlan();
-
-          // parse planner output
-          chunk = "";
-          int solution_number;
-          raw_plan >> chunk;
-          cerr << m_Config.now() << ": DEBUG: got \"" << chunk << "\"" << endl;
           raw_plan >> solution_number;
           cerr << m_Config.now() << ": DEBUG: solution_number = " << solution_number << endl;
           int batch_number;
