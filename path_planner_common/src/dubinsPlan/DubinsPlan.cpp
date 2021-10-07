@@ -1,4 +1,5 @@
 #include <path_planner_common/DubinsPlan.h>
+#include <sstream>
 
 void DubinsPlan::append(const DubinsPlan &plan) {
     for (auto s : plan.m_DubinsPaths) append(s);
@@ -15,7 +16,10 @@ void DubinsPlan::sample(State& s) const {
             return;
         }
     }
-    throw std::runtime_error("Requested time outside plan bounds");
+    std::stringstream stream;
+    stream << "Requested time " << std::to_string(s.time()) << " outside DubinsPlan bounds, which spans from "
+    << std::to_string(getStartTime()) << " to " << std::to_string(getEndTime());
+    throw std::runtime_error(stream.str());
 }
 
 DubinsPlan::DubinsPlan(const State& s1, const State& s2, double rho) {

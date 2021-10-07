@@ -1,9 +1,14 @@
 #include "PotentialFieldPlanner.h"
 #include "../common/dynamic_obstacles/BinaryDynamicObstaclesManager.h"
 
-Planner::Stats PotentialFieldPlanner::plan(const RibbonManager& ribbonManager, const State& start,
-                                           PlannerConfig config, const DubinsPlan& previousPlan,
-                                           double timeRemaining) {
+Planner::Stats PotentialFieldPlanner::plan(
+        const RibbonManager& ribbonManager,
+        const State& start,
+        PlannerConfig config,
+        const DubinsPlan& previousPlan,
+        double timeRemaining,
+        std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy
+    ) {
     Stats stats;
     auto current = start;
     current.speed() = config.maxSpeed();

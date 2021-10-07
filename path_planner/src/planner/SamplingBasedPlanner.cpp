@@ -179,9 +179,14 @@ std::function<bool(const std::shared_ptr<Vertex>& v1, const std::shared_ptr<Vert
     };
 }
 
-Planner::Stats SamplingBasedPlanner::plan(const RibbonManager&, const State& start, PlannerConfig config,
-                                      const DubinsPlan& previousPlan,
-                                      double timeRemaining) {
+Planner::Stats SamplingBasedPlanner::plan(
+    const RibbonManager& ribbonManager,
+    const State& start,
+    PlannerConfig config,
+    const DubinsPlan& previousPlan,
+    double timeRemaining,
+    std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy
+) {
     m_Config = config;
     m_StartStateTime = start.time();
     m_Samples.clear();

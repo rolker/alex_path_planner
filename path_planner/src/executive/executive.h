@@ -89,6 +89,17 @@ public:
     static double getCurrentTime();
 
     /**
+     * Enum to represent which planner to use. Passed to setConfiguration.
+     * 
+     * Note: the number and order of variants in this enum must exactly match `planner_enum` in path_planner.cfg ROS dynamic reconfiguration file, and the range of the `planner` parameter in that file must also be set appropriately.
+     */
+    enum WhichPlanner {
+        AStar, // Real-Time BIT* (RBPC) by Alex Brown
+        PotentialField, // Alex Brown
+        BitStar, // BIT* implementation by Stephen Wissow
+    };
+
+    /**
      * Update the configuration of the planner.
      * @param turningRadius
      * @param coverageTurningRadius
@@ -100,7 +111,7 @@ public:
     void setConfiguration(double turningRadius, double coverageTurningRadius, double maxSpeed, double slowSpeed,
                           double lineWidth, int k, int heuristic, double timeHorizon, double timeMinimum,
                           double collisionCheckingIncrement, int initialSamples, bool useBrownPaths,
-                          bool useGaussianDynamicObstacles, bool ignoreDynamicObstacles, bool usePotentialField);
+                          bool useGaussianDynamicObstacles, bool ignoreDynamicObstacles, WhichPlanner whichPlanner);
 
     /**
      * Update the planner visualization status with a new visualization file. If visualize is false the path is ignored.
@@ -142,8 +153,8 @@ private:
     // whether or not to ignore dynamic obstacles
     bool m_IgnoreDynamicObstacles = false;
 
-    // flag for the potential field planner (ignores most other planner config options)
-    bool m_UsePotentialField = false;
+    // which planner to use (potential field planner ignores most other planner config options)
+    WhichPlanner m_WhichPlanner = WhichPlanner::AStar;
 
     // handle on a visualizer. This could probably be handled in a cleaner way
     Visualizer::UniquePtr m_Visualizer;
@@ -153,6 +164,9 @@ private:
     // Just keep both dynamic obstacle managers up to date all the time, regardless of which we're using
     BinaryDynamicObstaclesManager::SharedPtr m_BinaryDynamicObstaclesManager = std::make_shared<BinaryDynamicObstaclesManager>();
     GaussianDynamicObstaclesManager::SharedPtr m_GaussianDynamicObstaclesManager = std::make_shared<GaussianDynamicObstaclesManager>();
+
+    // synchronize to Gaussian dynamic obstacles data
+    std::mutex m_GaussianDynamicObstaclesManagerMutex;
 
     // map info (start with no new map)
     std::shared_ptr<Map> m_NewMap = nullptr;

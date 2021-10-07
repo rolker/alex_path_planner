@@ -16,6 +16,8 @@
 #include <project11/tf2_utils.h>
 #include <nav_msgs/Odometry.h>
 
+#include <iostream>
+
 /**
  * Base class for nodes related to the path planner. Holds some shared code and does some shared setup.
  */
@@ -196,6 +198,13 @@ public:
             planMsg.paths.push_back(path);
         }
         planMsg.endtime = plan.getEndTime();
+        // std::cerr << "DEBUG: NodeBase.convertToPlanMsg about to return this planMsg:\n" << std::endl;
+        // std::cerr << "DEBUG:    number of paths: " << planMsg.paths.size() << " ... end time: " << planMsg.endtime << std::endl;
+        for (const auto& p : planMsg.paths) {
+            // std::cerr << "DEBUG: a path starts at time t = " << p.start_time << std::endl;
+        }
+        // std::cerr << "DEBUG: start time: " << planMsg.start_time << std::endl;
+        // std::cerr << "DEBUG: end time: " << planMsg.endtime << std::endl;
         return planMsg;
     }
 
@@ -204,15 +213,19 @@ public:
      * @param plan
      * @return
      */
-    State publishPlan(const DubinsPlan& plan) {
+    State publishPlan(const DubinsPlan& plan, double planning_time_ideal) {
+        // std::cerr << "NodeBase.publishPlan called with plan: " << plan.getStartTime() << " to " << plan.getEndTime() << std::endl;
         path_planner_common::UpdateReferenceTrajectoryRequest req;
         path_planner_common::UpdateReferenceTrajectoryResponse res;
         req.plan = convertToPlanMsg(plan);
+        req.planning_time = planning_time_ideal;
         if (m_update_reference_trajectory_client.call(req, res)) {
             auto s = m_TrajectoryDisplayer.convertToStateFromMsg(res.state);
             displayPlannerStart(s);
             return s;
         } else {
+            // DEBUG
+            std::cerr << "NodeBase.publishPlan: m_update_refrence_trajectory_client.call() failed; returning new default State()" << std::endl;
             return State();
         }
     }

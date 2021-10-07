@@ -19,7 +19,7 @@ public:
      * @param plan the trajectory to publish
      * @return The state to plan from next, as predicted by a controller accepting the trajectory
      */
-    virtual State publishPlan(const DubinsPlan& plan) = 0;
+    virtual State publishPlan(const DubinsPlan& plan, double planning_time_ideal) = 0;
 
     /**
      * Display a trajectory to /project11/display

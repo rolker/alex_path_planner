@@ -28,6 +28,16 @@ public:
         Obstacle(double x, double y, double heading, double speed, double time, Eigen::Matrix<double, 2, 2> covariance)
                 : X(x), Y(y), Yaw(M_PI_2 - heading), Speed(speed), Time(time), mean(x, y), covariance(std::move(covariance)) {}
 
+        Obstacle(const Obstacle & other) :
+            X(other.X),
+            Y(other.Y),
+            Yaw(other.Yaw),
+            Speed(other.Speed),
+            Time(other.Time),
+            mean(other.mean),
+            covariance(other.covariance)
+        {}
+
         void project(double desiredTime) {
             double dt = desiredTime - Time;
             double dx = Speed * dt * cos(Yaw);
@@ -55,6 +65,10 @@ public:
     void forget(uint32_t mmsi);
 
     const std::unordered_map<uint32_t, Obstacle>& get() const;
+
+    const std::unordered_map<uint32_t, Obstacle> get_deep_copy() const;
+
+    int size() const;
 
 private:
     std::unordered_map<uint32_t, Obstacle> m_Obstacles;

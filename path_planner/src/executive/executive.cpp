@@ -9,6 +9,8 @@
 #include "../common/map/GeoTiffMap.h"
 #include "../common/map/GridWorldMap.h"
 #include "../planner/PotentialFieldPlanner.h"
+#include "../planner/BitStarPlanner.h"
+#include <iomanip> // readable log timestamps
 
 using namespace std;
 
@@ -16,6 +18,8 @@ Executive::Executive(TrajectoryPublisher *trajectoryPublisher)
 {
     m_TrajectoryPublisher = trajectoryPublisher;
     m_PlannerConfig.setNowFunction([&] { return m_TrajectoryPublisher->getTime(); });
+    // readable log timestamps instead of scientific notation
+    cerr << fixed << showpoint << setprecision(9);
 }
 
 Executive::~Executive() {
@@ -42,12 +46,6 @@ void Executive::updateCovered(double x, double y, double speed, double heading, 
 
 void Executive::planLoop() {
     double trialStartTime = m_TrajectoryPublisher->getTime(), cumulativeCollisionPenalty = 0;
-
-    // Forget all dynamic obstacles. In practice this is not a good idea but for testing it's sort of OK
-    // Roland, you probably want to take this out at some point and find a better way to make the planner forget about
-    // old dynamic obstacles (timeout of some kind?)
-    m_BinaryDynamicObstaclesManager = std::make_shared<BinaryDynamicObstaclesManager>();
-    m_GaussianDynamicObstaclesManager = std::make_shared<GaussianDynamicObstaclesManager>();
 
     try {
         cerr << "Initializing planner" << endl;
@@ -79,14 +77,31 @@ void Executive::planLoop() {
         while (true) {
             double startTime = m_TrajectoryPublisher->getTime();
             // logging time each time through the loop for making sure we're hitting the time bound
-//            *m_PlannerConfig.output() << "Top of plan loop at time " << std::to_string(startTime) << std::endl;
+            // cerr << startTime << ": Executive.planLoop() starting " << std::endl;
 
             // planner is stateless so we can make a new instance each time
             unique_ptr<Planner> planner;
-            if (m_UsePotentialField) {
-                planner = std::unique_ptr<Planner>(new PotentialFieldPlanner);
-            } else {
-                planner = std::unique_ptr<Planner>(new AStarPlanner);
+            // planner needs to know planning_time_actual (see AFB's comment on c_PlanningTimeSeconds); controller needs to know planning_time_ideal
+            double planning_time_ideal;
+            double planning_time_actual;
+            switch (m_WhichPlanner) {
+                case WhichPlanner::PotentialField:
+                    planner = std::unique_ptr<Planner>(new PotentialFieldPlanner);
+                    planning_time_ideal = 1.0;
+                    planning_time_actual = c_PlanningTimeSeconds;
+                    break;
+                case WhichPlanner::AStar:
+                    planner = std::unique_ptr<Planner>(new AStarPlanner);
+                    planning_time_ideal = 1.0;
+                    planning_time_actual = c_PlanningTimeSeconds;
+                    break;
+                case WhichPlanner::BitStar:
+                    planner = std::unique_ptr<Planner>(new BitStarPlanner);
+                    planning_time_ideal = 3.0;
+                    planning_time_actual = planning_time_ideal - (1 - c_PlanningTimeSeconds);
+                    break;
+                default:
+                    throw invalid_argument("Unrecognized case for m_WhichPlanner.");
             }
 
             { // new scope for RAII again
@@ -96,6 +111,8 @@ void Executive::planLoop() {
                     break;
                 }
             }
+
+            // TODOSJW: maybe ALTER the following two blocks for BIT*? I.e., we're not checking ribbon coverage, we're just checking if we got to a goal pose. Maybe this would change once we have the point-and-click feature.
             { // and again
                 std::lock_guard<std::mutex> lock1(m_RibbonManagerMutex);
                 if (m_RibbonManager.done()) {
@@ -113,8 +130,10 @@ void Executive::planLoop() {
 
             // if the state estimator returned an error naively do it ourselves
             if (startState.time() == -1) {
+                // cerr << "DEBUG: startStart.time() == -1. Going to push m_LastState from " << m_LastState.time() << "." << endl;
                 startState = m_LastState.push(
                         m_TrajectoryPublisher->getTime() + c_PlanningTimeSeconds - m_LastState.time());
+                // cerr << "           Now: startState.time() = " << startState.time() << "." << endl;
             }
 
             // copy the map pointer if it's been set (don't wait for the mutex because it may be a while)
@@ -141,10 +160,14 @@ void Executive::planLoop() {
                 }
             }
 
+            // TODOSJW: Do I need to change this to remove 1 Hz replanning?
             if (!c_ReusePlanEnabled) stats.Plan = DubinsPlan();
 
+            // SJW: this seems good, probably want to keep this. I think this is what "parcels out" the remaining portion of the incumbent plan, which is exactly what I want when using BIT*'s complete plan from start to goal.
+            // SJW: Well, this doesn't do the parceling, but it does remove the part of the plan that is in the past.
             if (!stats.Plan.empty()) stats.Plan.changeIntoSuffix(startState.time()); // update the last plan
 
+            // SJW: I think this is irrelevant to removing 1 Hz replanning for BIT*.
             // shrink turning radius (experimental)
             if (c_RadiusShrinkEnabled) {
                 m_PlannerConfig.setTurningRadius(m_PlannerConfig.turningRadius() - c_RadiusShrinkAmount);
@@ -156,8 +179,10 @@ void Executive::planLoop() {
             // check for collision penalty
             double collisionPenalty = 0;
             if (m_UseGaussianDynamicObstacles) {
-                collisionPenalty = m_GaussianDynamicObstaclesManager->DynamicObstaclesManager::collisionExists(
-                        m_LastState, false);
+                {
+                    std::lock_guard<std::mutex> lock(m_GaussianDynamicObstaclesManagerMutex);
+                    collisionPenalty = m_GaussianDynamicObstaclesManager->DynamicObstaclesManager::collisionExists(m_LastState, false);
+                }
             } else {
                 collisionPenalty = m_BinaryDynamicObstaclesManager->DynamicObstaclesManager::collisionExists(
                         m_LastState, false);
@@ -184,13 +209,56 @@ void Executive::planLoop() {
                     std::lock_guard<std::mutex> lock(m_RibbonManagerMutex);
                     ribbonManagerCopy = m_RibbonManager;
                 }
+                // 
                 // cover up to the state that we're planning from
                 ribbonManagerCopy.coverBetween(m_LastState.x(), m_LastState.y(), startState.x(), startState.y(), false);
-                stats = planner->plan(ribbonManagerCopy, startState, m_PlannerConfig, stats.Plan,
-                                     startTime + c_PlanningTimeSeconds - m_TrajectoryPublisher->getTime());
+
+                // get copy of Gaussian dynamic obstacle data to pass to planner (implemented for BitStarPlanner)
+                std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy;
+                {
+                    std::lock_guard<std::mutex> lock(m_GaussianDynamicObstaclesManagerMutex);
+                    cerr << "DEBUG: Executive.planLoop(): m_GaussianDynamicObstaclesManager.size(): " << m_GaussianDynamicObstaclesManager->size() << endl;
+                    dynamic_obstacles_copy = m_GaussianDynamicObstaclesManager->get_deep_copy();
+                    cerr << "DEBUG: Executive.planLoop(): m_GaussianDynamicObstaclesManager.get_deep_copy().size(): " << dynamic_obstacles_copy.size() << endl;
+                }
+
+                /***********************************
+                 * HERE IS THE PLANNER.PLAN() CALL *
+                 ***********************************/
+                // When using BIT*, only plan once. Otherwise, retain previous 1 Hz replanning behavior.
+                // (Note we only break out of the switch and skip the default option if we're using BIT*
+                // *AND* we already have a plan; in any other case, we call planner.plan().)
+                switch (m_WhichPlanner) {
+                    case WhichPlanner::BitStar:
+                        // If we have a plan, then do not replan.
+                        if (!stats.Plan.empty()) {
+                            cerr << m_TrajectoryPublisher->getTime() << ": Executive.planLoop() BIT* already has a plan, so skipping planning on this cycle." << endl;
+                            break;
+                        }
+                        // If we have no plan, then do indeed plan.
+                    default:
+                        double planning_time_actual_remaining = planning_time_actual - (m_TrajectoryPublisher->getTime() - startTime);
+                        cerr << m_TrajectoryPublisher->getTime() << ": Executive.planLoop() about to call planner.plan() with planning_time_actual_remaining " << planning_time_actual_remaining << endl;
+                        stats = planner->plan(
+                            ribbonManagerCopy,
+                            startState,
+                            m_PlannerConfig,
+                            stats.Plan,
+                            planning_time_actual_remaining,
+                            dynamic_obstacles_copy
+                        );
+                }
+                
+
+
+
+            // QUESTION: What kind of exception(s) get caught here?
             } catch (const std::exception& e) {
                 cerr << "Exception thrown while planning:" << endl;
                 cerr << e.what() << endl;
+                // DEBUG: temporarily throwing exception to try to provoke core dump
+                // raise (SIGABRT);
+                // throw;
                 cerr << "Ignoring that and just trying to proceed." << endl;
                 stats.Plan = DubinsPlan();
             } catch (...) {
@@ -202,6 +270,7 @@ void Executive::planLoop() {
             m_TrajectoryPublisher->publishStats(stats, collisionPenalty * Edge::collisionPenaltyFactor(),
                                                 0, lastPlanAchievable);
 
+            // SJW: It's probably fine to keep working on 1 Hz (or whatever it is), as long as I'm not replanning. So how do I decide whether to replan? Just if MPC complains. Where do I know about that?
             // calculate remaining time (to sleep)
             double endTime = m_TrajectoryPublisher->getTime();
             int sleepTime = ((int) ((c_PlanningTimeSeconds - (endTime - startTime)) * 1000));
@@ -214,13 +283,19 @@ void Executive::planLoop() {
 //            }
 
             // display the trajectory
-            m_TrajectoryPublisher->displayTrajectory(stats.Plan.getHalfSecondSamples(), true, stats.Plan.dangerous());
+            // cerr << "DEBUG: about to displayTrajectory" << endl;
+            auto samples_for_display = stats.Plan.getHalfSecondSamples();
+            // cerr << "DEBUG: number of samples_for_display: " << samples_for_display.size() << endl;
+            m_TrajectoryPublisher->displayTrajectory(samples_for_display, true, stats.Plan.dangerous());
+            // cerr << "DEBUG: just attempted to displayTrajectory" << endl;
 
             if (!stats.Plan.empty()) {
                 failureCount = 0;
                 // send trajectory to controller
                 try {
-                    startState = m_TrajectoryPublisher->publishPlan(stats.Plan);
+                    // cerr << "DEBUG: about to attempt to publish plan to controller" << endl;
+                    startState = m_TrajectoryPublisher->publishPlan(stats.Plan, planning_time_ideal);
+                    // cerr << "DEBUG: after attempting to publish plan, received new startState with time " << startState.time() << endl;
                 } catch (const std::exception& e) {
                     cerr << "Exception thrown while updating controller's reference trajectory:" << endl;
                     cerr << e.what() << endl;
@@ -241,6 +316,7 @@ void Executive::planLoop() {
                     }
                 }
                 State expectedStartState(startState);
+                // cerr << "DEBUG: Executive::planLoop() about to call stats.Plan.sample() on expectedStartState with time " << expectedStartState.time() << endl;
                 stats.Plan.sample(expectedStartState);
                 if (!startState.isCoLocated(expectedStartState)) {
                     // reset plan because controller says we can't make it
@@ -261,7 +337,7 @@ void Executive::planLoop() {
                     lastPlanAchievable = true;
                 }
             } else {
-                cerr << "Planner returned empty trajectory." << endl;
+                cerr << m_TrajectoryPublisher->getTime() << ": Planner returned empty trajectory." << endl;
                 startState = State();
                 failureCount++;
                 if (failureCount > 2) {
@@ -311,11 +387,24 @@ void Executive::terminate()
 }
 
 void Executive::updateDynamicObstacle(uint32_t mmsi, State obstacle, double width, double length) {
+    cerr << "DEBUG: Executive.updateDynamicObstacle() called" << endl;
 //    m_DynamicObstaclesManager.update(mmsi, inventDistributions(obstacle));
     m_BinaryDynamicObstaclesManager->update(mmsi, obstacle.x(), obstacle.y(), obstacle.heading(),
             obstacle.speed(), obstacle.time(), width, length);
-    m_GaussianDynamicObstaclesManager->update(mmsi, obstacle.x(), obstacle.y(), obstacle.heading(),
-            obstacle.speed(), obstacle.time());
+    {
+        std::lock_guard<std::mutex> lock(m_GaussianDynamicObstaclesManagerMutex);
+        // cerr << "DEBUG: Executive.updateDynamicObstacle() has acquired m_GaussianDynamicObstaclesManagerMutex" << endl;
+        // cerr << "DEBUG: Executive.updateDynamicObstacle(): PRIOR to update, m_GaussianDynamicObstaclesManager.size(): " << m_GaussianDynamicObstaclesManager->size() << endl;
+        m_GaussianDynamicObstaclesManager->update(
+            mmsi,
+            obstacle.x(),
+            obstacle.y(),
+            obstacle.heading(),
+            obstacle.speed(),
+            obstacle.time()
+        );
+        // cerr << "DEBUG: Executive.updateDynamicObstacle(): AFTER update, m_GaussianDynamicObstaclesManager.size(): " << m_GaussianDynamicObstaclesManager->size() << endl;
+    }
 }
 
 void Executive::refreshMap(const std::string& pathToMapFile, double latitude, double longitude) {
@@ -396,7 +485,7 @@ void Executive::setConfiguration(double turningRadius, double coverageTurningRad
                                  double lineWidth, int k, int heuristic, double timeHorizon, double timeMinimum,
                                  double collisionCheckingIncrement, int initialSamples, bool useBrownPaths,
                                  bool useGaussianDynamicObstacles, bool ignoreDynamicObstacles,
-                                 bool usePotentialField) {
+                                 WhichPlanner whichPlanner) {
     m_PlannerConfig.setTurningRadius(turningRadius);
     m_PlannerConfig.setCoverageTurningRadius(coverageTurningRadius);
     m_PlannerConfig.setMaxSpeed(maxSpeed);
@@ -419,7 +508,7 @@ void Executive::setConfiguration(double turningRadius, double coverageTurningRad
     m_PlannerConfig.setUseBrownPaths(useBrownPaths);
     m_UseGaussianDynamicObstacles = useGaussianDynamicObstacles;
     m_IgnoreDynamicObstacles = ignoreDynamicObstacles;
-    m_UsePotentialField = usePotentialField;
+    m_WhichPlanner = whichPlanner;
 }
 
 void Executive::startPlanner() {

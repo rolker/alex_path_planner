@@ -14,6 +14,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <path_planner_common/Stats.h>
 #include <path_planner_common/TaskLevelStats.h>
+// #include "executive/executive.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCInconsistentNamingInspection"
@@ -187,6 +188,7 @@ public:
 
     void displayTrajectory(std::vector<State> trajectory, bool plannerTrajectory, bool dangerous) override
     {
+        // std::cerr << "DEBUG: path_planner_node.cpp: PathPlanner::displayTrajectory() about to call m_TrajectoryDisplayer.displayTrajectory()" << std::endl;
         m_TrajectoryDisplayer.displayTrajectory(trajectory, plannerTrajectory, !dangerous);
     }
 
@@ -209,6 +211,7 @@ public:
 
     void reconfigureCallback(path_planner::path_plannerConfig &config, uint32_t level) {
         m_Executive->refreshMap(config.planner_geotiff_map, m_origin.latitude, m_origin.longitude);
+        Executive::WhichPlanner which_planner = static_cast<Executive::WhichPlanner>(config.planner);
         m_Executive->setConfiguration(config.non_coverage_turning_radius, config.coverage_turning_radius,
                                       config.max_speed, config.slow_speed, config.line_width, config.branching_factor,
                                       config.heuristic,
@@ -217,7 +220,7 @@ public:
                                       config.initial_samples,
                                       config.use_brown_paths,
                                       config.dynamic_obstacles == 1, config.ignore_dynamic_obstacles,
-                                      config.use_potential_field_planner);
+                                      which_planner);
         m_Executive->setPlannerVisualization(config.dump_visualization, config.visualization_file);
     }
 
@@ -250,8 +253,8 @@ public:
         m_display_pub.publish(geoVizItem);
     }
 
-    State publishPlan(const DubinsPlan& plan) override {
-        return NodeBase::publishPlan(plan);
+    State publishPlan(const DubinsPlan& plan, double planning_time_ideal) override {
+        return NodeBase::publishPlan(plan, planning_time_ideal);
     }
 
     void displayDynamicObstacle(double x, double y, double yaw, double width, double length, uint32_t id) override {

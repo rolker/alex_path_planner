@@ -1,0 +1,3 @@
+[submodule "path_planner/src/planner/bit_star_planner"]
+	path = path_planner/src/planner/bit_star_planner
+	url = git@github.com:sjwo/planner
