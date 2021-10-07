@@ -6,7 +6,7 @@
 #include <path_planner_common/State.h>
 #include "Ribbon.h"
 extern "C" {
-#include <dubins.h>
+#include <dubins_curves/dubins.h>
 }
 
 /**

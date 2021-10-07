@@ -6,7 +6,7 @@
 //#include "../../src/planner/utilities/Path.h"
 
 extern "C" {
-#include "dubins.h"
+#include "dubins_curves/dubins.h"
 }
 
 using std::vector;

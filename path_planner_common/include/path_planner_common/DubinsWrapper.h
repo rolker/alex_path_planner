@@ -5,7 +5,7 @@
 #include <vector>
 
 extern "C" {
-#include "dubins.h"
+#include "dubins_curves/dubins.h"
 };
 
 /**

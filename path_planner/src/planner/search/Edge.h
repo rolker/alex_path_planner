@@ -10,7 +10,7 @@
 #include "../utilities/Ribbon.h"
 
 extern "C" {
-#include "dubins.h"
+#include "dubins_curves/dubins.h"
 }
 
 // forward declaration to resolve circular dependency
