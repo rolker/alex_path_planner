@@ -8,10 +8,10 @@ if [ "" = "$PKG_OK" ]; then
   echo "No $REQUIRED_PKG. Setting up $REQUIRED_PKG."
   sudo apt-get --yes install $REQUIRED_PKG
 fi
-cd path_planner_common
+cd alex_path_planner_common
 doxygen
-cd ../path_planner
+cd ../alex_path_planner
 doxygen
-cd ../../mpc
+cd ../../alex_mpc
 doxygen
-cd ../path_planner
+cd ../alex_path_planner

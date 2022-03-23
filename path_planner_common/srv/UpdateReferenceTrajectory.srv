@@ -1,5 +1,0 @@
-# Service which updates the controller's reference trajectory and returns a state from which to start planning, planning_time seconds from now. (RBPC uses 1 sec; BIT* may use longer.)
-path_planner_common/Plan plan
-float64 planning_time
----
-path_planner_common/StateMsg state
