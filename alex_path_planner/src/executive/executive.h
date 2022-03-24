@@ -122,6 +122,8 @@ public:
      */
     void setPlannerVisualization(bool visualize, const std::string& visualizationFilePath);
 
+    void setPlanningTime(double planning_time);
+
 private:
 
     /**
@@ -196,7 +198,10 @@ private:
     // Planning time constant. Would be nice to make this a parameter but the controller depends on it being 1s.
     // You might notice that this isn't actually 1s; I played around with it and this setting got closest to actually
     // giving us 1s times.
-    static constexpr double c_PlanningTimeSeconds = 0.85;
+    //static constexpr double c_PlanningTimeSeconds = 0.85;
+    static constexpr double c_PlanningTimeOverhead = 0.15;
+
+    double m_PlanningTimeIdeal = 1.0;
 
     /**
      * Make sure the threads can exit and kill the planner (if it's running).

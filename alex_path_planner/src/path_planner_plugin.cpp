@@ -85,9 +85,14 @@ public:
     nh.param("ignore_dynamic_obstacles", ignore_dynamic_obstacles_, ignore_dynamic_obstacles_);
     nh.param("planner", planner_, planner_);
 
+    nh.param("planning_time", planning_time_, planning_time_);
+
+    nh.param("display_local_map", display_local_map_, display_local_map_);
+
     stats_pub_ = nh.advertise<alex_path_planner_common::Stats>("stats", 1);
     task_level_stats_pub_ = nh.advertise<alex_path_planner_common::TaskLevelStats>("task_level_stats", 1);
-    display_pub_ = nh.advertise<geographic_visualization_msgs::GeoVizItem>("display",1);
+    // use a non-private node handle for the display output
+    display_pub_ = ros::NodeHandle().advertise<geographic_visualization_msgs::GeoVizItem>("project11/display",1);
   }
 
   void setGoal(const std::shared_ptr<project11_navigation::Task>& input) override
@@ -159,6 +164,12 @@ public:
       if(data["planner"])
         planner = data["planner"].as<std::string>();
 
+      planning_time_override_ = planning_time_;
+      if(data["planning_time"])
+        planning_time_override_ = data["planning_time"].as<double>();
+
+      executive_->setPlanningTime(planning_time_override_);
+
       Executive::WhichPlanner which_planner = Executive::AStar;
       if (planner == "AStarPlanner")
         which_planner = Executive::AStar;
@@ -213,6 +224,56 @@ public:
             project11::speedOverGround(odom.twist.twist.linear),
             project11::quaternionToHeadingDegrees(odom.pose.pose.orientation),
             odom.header.stamp.toSec());
+
+      geographic_visualization_msgs::GeoVizItem geoVizItem;
+      geoVizItem.id = "local_map";
+      if(display_local_map_ && trajectory_displayer_)
+      {
+
+        auto c = context_->costmap();
+        if(c)
+        {
+          double step_size = c->getCostmap()->getResolution();
+          for(double x = odom.pose.pose.position.x-150.0; x <= odom.pose.pose.position.x+150.0; x += step_size)
+            for(double y = odom.pose.pose.position.y-150.0; y <= odom.pose.pose.position.y+150.0; y += step_size)
+            {
+              geographic_visualization_msgs::GeoVizPolygon p;
+              double size = step_size/4.0;
+              p.edge_color.a = 1.0;
+              p.fill_color.a = 0.5;
+              unsigned int mx, my;
+              if(c->getCostmap()->worldToMap(x, y, mx, my))
+              {
+                auto cost = c->getCostmap()->getCost(mx, my);
+                size = 0.5*step_size*cost/255.0;
+                if(cost < costmap_2d::LETHAL_OBSTACLE)
+                {
+                  p.edge_color.g = 1.0;
+                  p.edge_color.b = 1.0;
+                  p.fill_color.g = 1.0;
+                  p.fill_color.b = 1.0;
+                }
+                else
+                {
+                  p.edge_color.r = 1.0;
+                  p.fill_color.r = 1.0;
+                }
+              }
+              else
+              {
+                p.edge_color.b - 1.0;
+                p.fill_color.b = 1.0;
+              }
+              p.outer.points.push_back(trajectory_displayer_->convertToLatLong(State(x-size,y-size,0,0,0)));
+              p.outer.points.push_back(trajectory_displayer_->convertToLatLong(State(x+size,y-size,0,0,0)));
+              p.outer.points.push_back(trajectory_displayer_->convertToLatLong(State(x+size,y+size,0,0,0)));
+              p.outer.points.push_back(trajectory_displayer_->convertToLatLong(State(x-size,y+size,0,0,0)));
+              geoVizItem.polygons.push_back(p);
+            }
+        }
+      }
+      display_pub_.publish(geoVizItem);
+
     }
     // todo send contacts to executive
 
@@ -222,7 +283,7 @@ public:
   {
     State ret;
     auto odom = context_->getOdometry();
-    ros::Duration lookahead(1.0);
+    ros::Duration lookahead(planning_time_override_);
     ret.setX(odom.pose.pose.position.x+odom.twist.twist.linear.x*lookahead.toSec());
     ret.setY(odom.pose.pose.position.y+odom.twist.twist.linear.y*lookahead.toSec());
     ret.setTime((odom.header.stamp+lookahead).toSec());
@@ -519,6 +580,11 @@ private:
   bool gaussian_dynamic_obstacles_ = false;
   bool ignore_dynamic_obstacles_ = false;
   std::string planner_ = "AStarPlanner";
+
+  double planning_time_ = 1.0;
+  double planning_time_override_ = planning_time_;
+
+  bool display_local_map_ = false;
 };
 
 } // namespace alex_path_planner

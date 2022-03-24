@@ -44,6 +44,11 @@ void Executive::updateCovered(double x, double y, double speed, double heading, 
     m_LastState = State(x, y, heading, speed, t);
 }
 
+void Executive::setPlanningTime(double planning_time)
+{
+    m_PlanningTimeIdeal = planning_time;
+}
+
 void Executive::planLoop() {
     double trialStartTime = m_TrajectoryPublisher->getTime(), cumulativeCollisionPenalty = 0;
 
@@ -82,23 +87,17 @@ void Executive::planLoop() {
             // planner is stateless so we can make a new instance each time
             unique_ptr<Planner> planner;
             // planner needs to know planning_time_actual (see AFB's comment on c_PlanningTimeSeconds); controller needs to know planning_time_ideal
-            double planning_time_ideal;
-            double planning_time_actual;
+            //double planning_time_ideal;
+            double planning_time_actual = m_PlanningTimeIdeal - c_PlanningTimeOverhead;
             switch (m_WhichPlanner) {
                 case WhichPlanner::PotentialField:
                     planner = std::unique_ptr<Planner>(new PotentialFieldPlanner);
-                    planning_time_ideal = 1.0;
-                    planning_time_actual = c_PlanningTimeSeconds;
                     break;
                 case WhichPlanner::AStar:
                     planner = std::unique_ptr<Planner>(new AStarPlanner);
-                    planning_time_ideal = 1.0;
-                    planning_time_actual = c_PlanningTimeSeconds;
                     break;
                 case WhichPlanner::BitStar:
                     planner = std::unique_ptr<Planner>(new BitStarPlanner);
-                    planning_time_ideal = 3.0;
-                    planning_time_actual = planning_time_ideal - (1 - c_PlanningTimeSeconds);
                     break;
                 default:
                     throw invalid_argument("Unrecognized case for m_WhichPlanner.");
@@ -132,7 +131,7 @@ void Executive::planLoop() {
             if (startState.time() == -1) {
                 // cerr << "DEBUG: startStart.time() == -1. Going to push m_LastState from " << m_LastState.time() << "." << endl;
                 startState = m_LastState.push(
-                        m_TrajectoryPublisher->getTime() + c_PlanningTimeSeconds - m_LastState.time());
+                        m_TrajectoryPublisher->getTime() + m_PlanningTimeIdeal-c_PlanningTimeOverhead - m_LastState.time());
                 // cerr << "           Now: startState.time() = " << startState.time() << "." << endl;
             }
 
@@ -273,7 +272,7 @@ void Executive::planLoop() {
             // SJW: It's probably fine to keep working on 1 Hz (or whatever it is), as long as I'm not replanning. So how do I decide whether to replan? Just if MPC complains. Where do I know about that?
             // calculate remaining time (to sleep)
             double endTime = m_TrajectoryPublisher->getTime();
-            int sleepTime = ((int) ((c_PlanningTimeSeconds - (endTime - startTime)) * 1000));
+            int sleepTime = ((int) ((m_PlanningTimeIdeal - c_PlanningTimeOverhead - (endTime - startTime)) * 1000));
             if (sleepTime >= 0) {
 //                *m_PlannerConfig.output() << "Finished with " << sleepTime << "ms extra time. Sleeping." << endl;
                 this_thread::sleep_for(chrono::milliseconds(sleepTime));
@@ -294,7 +293,7 @@ void Executive::planLoop() {
                 // send trajectory to controller
                 try {
                     // cerr << "DEBUG: about to attempt to publish plan to controller" << endl;
-                    startState = m_TrajectoryPublisher->publishPlan(stats.Plan, planning_time_ideal);
+                    startState = m_TrajectoryPublisher->publishPlan(stats.Plan, m_PlanningTimeIdeal);
                     // cerr << "DEBUG: after attempting to publish plan, received new startState with time " << startState.time() << endl;
                 } catch (const std::exception& e) {
                     cerr << "Exception thrown while updating controller's reference trajectory:" << endl;

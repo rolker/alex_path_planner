@@ -42,13 +42,13 @@ bool Costmap2DMap::isBlocked(double x, double y) const
   unsigned int mx, my;
   if(c->worldToMap(x, y, mx, my))
   {
-    ROS_INFO_STREAM("isBlocked? " << x << ", " << y << " cost: " << int(c->getCost(mx, my)));
+    //ROS_INFO_STREAM("isBlocked? " << x << ", " << y << " cost: " << int(c->getCost(mx, my)));
 
     if(c->getCost(mx, my) < blocked_threshold_)
       return false;
   }
-  else
-    ROS_INFO_STREAM("isBlocked? " << x << ", " << y << " outside map bounds!");
+  //else
+    //ROS_INFO_STREAM("isBlocked? " << x << ", " << y << " outside map bounds!");
 
   return true;
 }
