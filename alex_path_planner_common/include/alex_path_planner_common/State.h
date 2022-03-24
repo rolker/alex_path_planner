@@ -59,7 +59,7 @@ class State
      * @param yaw1
      * @return
      */
-    double setYaw(double yaw1) {
+    void setYaw(double yaw1) {
         heading() = M_PI_2 - yaw1;
         if (heading() < 0) heading() += c_TwoPi;
     }

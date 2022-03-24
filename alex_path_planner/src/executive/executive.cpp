@@ -407,6 +407,13 @@ void Executive::updateDynamicObstacle(uint32_t mmsi, State obstacle, double widt
     }
 }
 
+void Executive::setMap(std::shared_ptr<Map> new_map)
+{
+    std::lock_guard<std::mutex> lock(m_MapMutex);
+    m_NewMap = new_map;
+    m_CurrentMapPath.clear();
+}
+
 void Executive::refreshMap(const std::string& pathToMapFile, double latitude, double longitude) {
     // Run asynchronously and headless. The ol' fire-off-and-pray method
     thread([this, pathToMapFile, latitude, longitude] {

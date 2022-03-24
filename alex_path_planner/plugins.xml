@@ -1,0 +1,7 @@
+<library path="lib/libalex_path_planner_plugins">
+  <class name="alex_path_planner/AlexPathPlanner" type="alex_path_planner::AlexPathPlanner" base_class_type="project11_navigation::TaskToTaskWorkflow">
+    <description>
+      Obstacle aware real-time sampling planner.
+    </description>
+  </class>
+</library>

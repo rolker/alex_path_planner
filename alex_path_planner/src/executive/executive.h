@@ -82,6 +82,8 @@ public:
      */
     void refreshMap(const std::string& pathToMapFile, double latitude, double longitude);
 
+    void setMap(std::shared_ptr<Map> new_map);
+
     /**
      * Utility to get the current time. Public for testing, and only used when disconnected from ROS.
      * @return

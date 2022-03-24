@@ -28,9 +28,14 @@
   <exec_depend>project11</exec_depend>
   <depend>actionlib</depend>
   <depend>actionlib_msgs</depend>
+  <depend>costmap_2d</depend>
   <depend>dubins_curves</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>alex_path_planner_common</depend>
+  <depend>project11_navigation</depend>
+  <depend>pluginlib</depend>
+
   <export>
+    <project11_navigation plugin="${prefix}/plugins.xml" />
   </export>
 </package>

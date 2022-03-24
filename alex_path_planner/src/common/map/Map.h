@@ -30,7 +30,7 @@ public:
 
     virtual double resolution() const;
 
-private:
+protected:
     double m_Extremes[4] = {-DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX};
 };
 

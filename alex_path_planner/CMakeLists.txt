@@ -6,12 +6,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
+        costmap_2d
         geometry_msgs
         geographic_msgs
         marine_msgs
         roscpp
         rosbag
+        pluginlib
         project11
+        project11_navigation
         genmsg
         actionlib_msgs
         actionlib
@@ -50,7 +53,7 @@ include_directories(
 catkin_package(
 #        INCLUDE_DIRS include
         #  LIBRARIES asv_helm
-        CATKIN_DEPENDS geometry_msgs roscpp project11
+        CATKIN_DEPENDS costmap_2d geometry_msgs roscpp project11 project11_navigation pluginlib
         #  DEPENDS system_lib
 )
 
@@ -59,6 +62,7 @@ add_library(alex_path_planner_common # confusing; should change or move to the n
         src/common/dynamic_obstacles/Distribution.cpp
         src/common/dynamic_obstacles/DynamicObstacle.cpp
         src/common/dynamic_obstacles/DynamicObstaclesManager1.cpp
+        src/common/map/Costmap2DMap.cpp
         src/common/map/GeoTiffMap.cpp
         src/common/map/GridWorldMap.cpp
         src/common/dynamic_obstacles/BinaryDynamicObstaclesManager.cpp
@@ -96,6 +100,12 @@ add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 add_dependencies(${PROJECT_NAME}_node marine_msgs_gencpp)
 add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_gencfg)
 
+
+add_library(${PROJECT_NAME}_plugins src/path_planner_plugin.cpp)
+add_dependencies(${PROJECT_NAME}_plugins ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(${PROJECT_NAME}_plugins ${catkin_LIBRARIES} alex_executive project11_navigation)
+
+
 add_executable(controller_test_node src/controller_test_node.cpp)
 add_dependencies(controller_test_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(controller_test_node marine_msgs_gencpp path_planner_utilities)
@@ -128,3 +138,6 @@ install(DIRECTORY include/${PROJECT_NAME}
 #        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 #        )
 
+install(FILES plugins.xml
+ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
