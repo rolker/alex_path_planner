@@ -9,6 +9,7 @@
 #include "project11/tf2_utils.h"
 #include <pluginlib/class_list_macros.h>
 #include "common/map/Costmap2DMap.h"
+#include <project11_navigation/utilities.h>
 
 namespace alex_path_planner
 {
@@ -107,11 +108,20 @@ public:
     if(input_task_)
     {
       auto msg = input_task_->message();
-      for(int i = 0; i+1 < msg.poses.size(); i++)
+      if (msg.poses.size() >= 2)
       {
-        auto p1 = msg.poses[i];
-        auto p2 = msg.poses[i+1];
-        executive_->addRibbon(p1.pose.position.x, p1.pose.position.y, p2.pose.position.x, p2.pose.position.y);
+        // treat fir pair as non-ribbon transit
+        auto p1 = msg.poses[0];
+        auto p2 = msg.poses[1];
+        auto dir = project11_navigation::normalize( project11_navigation::vectorBetween(p1.pose, p2.pose));
+        executive_->addRibbon(p2.pose.position.x-dir.x*5, p2.pose.position.y-dir.y*5, p2.pose.position.x, p2.pose.position.y);
+
+        for(int i = 1; i+1 < msg.poses.size(); i++)
+        {
+          p1 = msg.poses[i];
+          p2 = msg.poses[i+1];
+          executive_->addRibbon(p1.pose.position.x, p1.pose.position.y, p2.pose.position.x, p2.pose.position.y);
+        }
       }
 
       auto caps = context_->getRobotCapabilities();
@@ -284,11 +294,17 @@ public:
     State ret;
     auto odom = context_->getOdometry();
     ros::Duration lookahead(planning_time_override_);
+    //lookahead = ros::Duration(0);
     ret.setX(odom.pose.pose.position.x+odom.twist.twist.linear.x*lookahead.toSec());
     ret.setY(odom.pose.pose.position.y+odom.twist.twist.linear.y*lookahead.toSec());
-    ret.setTime((odom.header.stamp+lookahead).toSec());
-    ret.setYaw(tf2::getYaw(odom.pose.pose.orientation));
+    auto next_start_time = odom.header.stamp+lookahead;
+    ret.setTime(next_start_time.toSec());
+    ret.setYaw(tf2::getYaw(odom.pose.pose.orientation));//+odom.twist.twist.angular.z*lookahead.toSec());
     ret.setSpeed(project11::speedOverGround(odom.twist.twist.linear));
+
+    ROS_INFO_STREAM("predicting " << ret.x() << ", " << ret.y() << " heading: " << ret.heading());
+
+
     if(input_task_)
     {
       const project11_nav_msgs::Task& msg = input_task_->message();
@@ -313,6 +329,37 @@ public:
         ros::Time current_start_time = ros::Time(d.getStartTime());
         double speed = d.getSpeed();
         ros::Time current_end_time = ros::Time(d.getEndTime());
+
+        
+        if(next_start_time >= current_start_time && next_start_time <= current_end_time)
+        {
+          if(current_end_time > current_start_time)
+          {
+            auto d = total_distance*(next_start_time-current_start_time).toSec()/(current_end_time-current_start_time).toSec();
+
+            double p[3];
+            int dubins_ret = dubins_path_sample(&path, d, p);
+            if(dubins_ret != 0)
+            {
+              ROS_DEBUG_STREAM_THROTTLE(2.0, "Error sampling Dubin's path for predicted position");
+            }
+            else
+            {
+              auto dx = p[0]-ret.x();
+              auto dy = p[1]-ret.y();
+              auto diff = sqrt(dx*dx+dy*dy);
+              if (diff < 25.0) // within 5 meters of plan?
+              {
+                // We are reasonably close to the plan so go with planned prediction
+                ret.setX(p[0]);
+                ret.setY(p[1]);
+                ret.setYaw(p[2]);
+                ROS_INFO_STREAM("Update prediction to " << p[0] << ", " << p[1] << " heading: " << ret.heading());
+              }
+            }
+
+          }
+        }
 
         if(curved_trajectory.curves.empty())
         {

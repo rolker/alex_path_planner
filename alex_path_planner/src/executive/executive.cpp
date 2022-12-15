@@ -153,8 +153,8 @@ void Executive::planLoop() {
 //                             << ") is blocked, according to most recent map. Trying again in 1s." << endl;
 //                        sleep(1);
 //                        continue;
-                        m_TrajectoryPublisher->allDone();
-                        break;
+                        //m_TrajectoryPublisher->allDone();
+                        //break;
                     }
                 }
             }
@@ -216,9 +216,9 @@ void Executive::planLoop() {
                 std::unordered_map<uint32_t, GaussianDynamicObstaclesManager::Obstacle> dynamic_obstacles_copy;
                 {
                     std::lock_guard<std::mutex> lock(m_GaussianDynamicObstaclesManagerMutex);
-                    cerr << "DEBUG: Executive.planLoop(): m_GaussianDynamicObstaclesManager.size(): " << m_GaussianDynamicObstaclesManager->size() << endl;
+                    //cerr << "DEBUG: Executive.planLoop(): m_GaussianDynamicObstaclesManager.size(): " << m_GaussianDynamicObstaclesManager->size() << endl;
                     dynamic_obstacles_copy = m_GaussianDynamicObstaclesManager->get_deep_copy();
-                    cerr << "DEBUG: Executive.planLoop(): m_GaussianDynamicObstaclesManager.get_deep_copy().size(): " << dynamic_obstacles_copy.size() << endl;
+                    //cerr << "DEBUG: Executive.planLoop(): m_GaussianDynamicObstaclesManager.get_deep_copy().size(): " << dynamic_obstacles_copy.size() << endl;
                 }
 
                 /***********************************
@@ -237,7 +237,7 @@ void Executive::planLoop() {
                         // If we have no plan, then do indeed plan.
                     default:
                         double planning_time_actual_remaining = planning_time_actual - (m_TrajectoryPublisher->getTime() - startTime);
-                        cerr << m_TrajectoryPublisher->getTime() << ": Executive.planLoop() about to call planner.plan() with planning_time_actual_remaining " << planning_time_actual_remaining << endl;
+                        //cerr << m_TrajectoryPublisher->getTime() << ": Executive.planLoop() about to call planner.plan() with planning_time_actual_remaining " << planning_time_actual_remaining << endl;
                         stats = planner->plan(
                             ribbonManagerCopy,
                             startState,
