@@ -8,7 +8,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         geographic_msgs
-        marine_msgs
+        project11_msgs
         roscpp
         rosbag
         project11
@@ -73,7 +73,7 @@ target_link_libraries(path_planner_utilities path_planner_state)
 add_dependencies(path_planner_utilities
         ${${PROJECT_NAME}_EXPORTED_TARGETS}
         ${catkin_EXPORTED_TARGETS}
-        marine_msgs_gencpp
+        project11_msgs_gencpp
         )
 
 #catkin_add_gtest(test_planner test/planner/test_planner.cpp)

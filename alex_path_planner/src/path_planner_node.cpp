@@ -1,8 +1,8 @@
 #include "ros/ros.h"
 #include "geographic_msgs/GeoPath.h"
 #include "geometry_msgs/TwistStamped.h"
-#include "marine_msgs/Contact.h"
-#include "marine_msgs/NavEulerStamped.h"
+#include "project11_msgs/Contact.h"
+#include "project11_msgs/NavEulerStamped.h"
 #include <vector>
 #include "project11/gz4d_geo.h"
 #include "alex_path_planner/alex_path_plannerAction.h"
@@ -139,7 +139,7 @@ public:
         if (m_ActionDone) setSucceeded();
     }
 
-    void contactCallback(const marine_msgs::Contact::ConstPtr& inmsg)
+    void contactCallback(const project11_msgs::Contact::ConstPtr& inmsg)
     {
         State obstacle;
 

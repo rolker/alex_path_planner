@@ -9,11 +9,11 @@ find_package(catkin REQUIRED COMPONENTS
         costmap_2d
         geometry_msgs
         geographic_msgs
-        marine_msgs
         roscpp
         rosbag
         pluginlib
         project11
+        project11_msgs
         project11_navigation
         genmsg
         actionlib_msgs
@@ -97,7 +97,7 @@ target_link_libraries(alex_executive alex_planner alex_path_planner_common)
 add_executable(${PROJECT_NAME}_node src/path_planner_node.cpp)
 
 add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(${PROJECT_NAME}_node marine_msgs_gencpp)
+add_dependencies(${PROJECT_NAME}_node project11_msgs_gencpp)
 add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_gencfg)
 
 
@@ -105,10 +105,9 @@ add_library(${PROJECT_NAME}_plugins src/path_planner_plugin.cpp)
 add_dependencies(${PROJECT_NAME}_plugins ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}_plugins ${catkin_LIBRARIES} alex_executive project11_navigation)
 
-
 add_executable(controller_test_node src/controller_test_node.cpp)
 add_dependencies(controller_test_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(controller_test_node marine_msgs_gencpp path_planner_utilities)
+add_dependencies(controller_test_node project11_msgs_gencpp path_planner_utilities)
 
 target_link_libraries(${PROJECT_NAME}_node
         ${catkin_LIBRARIES}
