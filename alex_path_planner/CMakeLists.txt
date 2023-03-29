@@ -120,10 +120,10 @@ target_link_libraries(controller_test_node
         )
 
 catkin_add_gtest(test_planner test/planner/test_planner.cpp)
-target_link_libraries(test_planner planner ${catkin_LIBRARIES})
+target_link_libraries(test_planner alex_planner ${catkin_LIBRARIES})
 
 catkin_add_gtest(test_system test/system/test_executive.cpp test/system/NodeStub.cpp)
-target_link_libraries(test_system executive)
+target_link_libraries(test_system alex_executive)
 
 ## Install project namespaced headers
 install(DIRECTORY include/${PROJECT_NAME}
