@@ -96,15 +96,15 @@ public:
     display_pub_ = ros::NodeHandle().advertise<geographic_visualization_msgs::GeoVizItem>("project11/display",1);
   }
 
-  void setGoal(const std::shared_ptr<project11_navigation::Task>& input) override
+  void setGoal(const project11_navigation::Task::Ptr& input) override
   {
     input_task_ = input;
     output_task_.reset();
     executive_->cancelPlanner();
     executive_->clearRibbons();
-    auto c = context_->costmap();
-    if(c)
-      executive_->setMap(std::make_shared<Costmap2DMap>(c));
+    // auto c = context_->costmap();
+    // if(c)
+    //   executive_->setMap(std::make_shared<Costmap2DMap>(c));
     if(input_task_)
     {
       auto msg = input_task_->message();
@@ -207,7 +207,7 @@ public:
     return false;
   }
 
-  bool getResult(std::shared_ptr<project11_navigation::Task>& output) override
+  bool getResult(project11_navigation::Task::Ptr& output) override
   {
     iterate();
     if(output_task_)
@@ -240,47 +240,47 @@ public:
       if(display_local_map_ && trajectory_displayer_)
       {
 
-        auto c = context_->costmap();
-        if(c)
-        {
-          double step_size = c->getCostmap()->getResolution();
-          for(double x = odom.pose.pose.position.x-150.0; x <= odom.pose.pose.position.x+150.0; x += step_size)
-            for(double y = odom.pose.pose.position.y-150.0; y <= odom.pose.pose.position.y+150.0; y += step_size)
-            {
-              geographic_visualization_msgs::GeoVizPolygon p;
-              double size = step_size/4.0;
-              p.edge_color.a = 1.0;
-              p.fill_color.a = 0.5;
-              unsigned int mx, my;
-              if(c->getCostmap()->worldToMap(x, y, mx, my))
-              {
-                auto cost = c->getCostmap()->getCost(mx, my);
-                size = 0.5*step_size*cost/255.0;
-                if(cost < costmap_2d::LETHAL_OBSTACLE)
-                {
-                  p.edge_color.g = 1.0;
-                  p.edge_color.b = 1.0;
-                  p.fill_color.g = 1.0;
-                  p.fill_color.b = 1.0;
-                }
-                else
-                {
-                  p.edge_color.r = 1.0;
-                  p.fill_color.r = 1.0;
-                }
-              }
-              else
-              {
-                p.edge_color.b - 1.0;
-                p.fill_color.b = 1.0;
-              }
-              p.outer.points.push_back(trajectory_displayer_->convertToLatLong(State(x-size,y-size,0,0,0)));
-              p.outer.points.push_back(trajectory_displayer_->convertToLatLong(State(x+size,y-size,0,0,0)));
-              p.outer.points.push_back(trajectory_displayer_->convertToLatLong(State(x+size,y+size,0,0,0)));
-              p.outer.points.push_back(trajectory_displayer_->convertToLatLong(State(x-size,y+size,0,0,0)));
-              geoVizItem.polygons.push_back(p);
-            }
-        }
+        // auto c = context_->costmap();
+        // if(c)
+        // {
+        //   double step_size = c->getCostmap()->getResolution();
+        //   for(double x = odom.pose.pose.position.x-150.0; x <= odom.pose.pose.position.x+150.0; x += step_size)
+        //     for(double y = odom.pose.pose.position.y-150.0; y <= odom.pose.pose.position.y+150.0; y += step_size)
+        //     {
+        //       geographic_visualization_msgs::GeoVizPolygon p;
+        //       double size = step_size/4.0;
+        //       p.edge_color.a = 1.0;
+        //       p.fill_color.a = 0.5;
+        //       unsigned int mx, my;
+        //       if(c->getCostmap()->worldToMap(x, y, mx, my))
+        //       {
+        //         auto cost = c->getCostmap()->getCost(mx, my);
+        //         size = 0.5*step_size*cost/255.0;
+        //         if(cost < costmap_2d::LETHAL_OBSTACLE)
+        //         {
+        //           p.edge_color.g = 1.0;
+        //           p.edge_color.b = 1.0;
+        //           p.fill_color.g = 1.0;
+        //           p.fill_color.b = 1.0;
+        //         }
+        //         else
+        //         {
+        //           p.edge_color.r = 1.0;
+        //           p.fill_color.r = 1.0;
+        //         }
+        //       }
+        //       else
+        //       {
+        //         p.edge_color.b - 1.0;
+        //         p.fill_color.b = 1.0;
+        //       }
+        //       p.outer.points.push_back(trajectory_displayer_->convertToLatLong(State(x-size,y-size,0,0,0)));
+        //       p.outer.points.push_back(trajectory_displayer_->convertToLatLong(State(x+size,y-size,0,0,0)));
+        //       p.outer.points.push_back(trajectory_displayer_->convertToLatLong(State(x+size,y+size,0,0,0)));
+        //       p.outer.points.push_back(trajectory_displayer_->convertToLatLong(State(x-size,y+size,0,0,0)));
+        //       geoVizItem.polygons.push_back(p);
+        //     }
+        // }
       }
       display_pub_.publish(geoVizItem);
 
@@ -307,7 +307,7 @@ public:
 
     if(input_task_)
     {
-      const project11_nav_msgs::Task& msg = input_task_->message();
+      const project11_nav_msgs::TaskInformation& msg = input_task_->message();
       if(msg.poses.empty())
         return ret;
 
@@ -448,7 +448,7 @@ public:
         }
       if(!output_task_)
       {
-        output_task_ = input_task_->createChildTaskBefore(std::shared_ptr<project11_navigation::Task>(),output_task_type_);
+        output_task_ = input_task_->createChildTaskBefore(project11_navigation::Task::Ptr(),output_task_type_);
         input_task_->setChildID(output_task_, output_task_name_);
       }
       auto out_msg = output_task_->message();
@@ -593,8 +593,8 @@ public:
 
 private:
   project11_navigation::Context::Ptr context_;
-  std::shared_ptr<project11_navigation::Task> input_task_;
-  std::shared_ptr<project11_navigation::Task> output_task_;
+  project11_navigation::Task::Ptr input_task_;
+  project11_navigation::Task::Ptr output_task_;
 
   ros::Publisher stats_pub_;
   ros::Publisher task_level_stats_pub_;
